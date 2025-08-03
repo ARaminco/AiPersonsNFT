@@ -10,6 +10,7 @@ export const app = () => ({
   activeTab: 'identity',
   fakers: {},
   copyStatus: 'copy',
+  aiApiModal: null,
   spouseModal: null,
   childModal: null,
   i18n: i18n,
@@ -28,7 +29,8 @@ export const app = () => ({
 
   init() {
     this.fakers = { en: new Faker({ locale: en }), fa: new Faker({ locale: [fa, en] }) };
-    this.spouseModal = new bootstrap.Modal(document.getElementById('aiApiModal'));
+    this.aiApiModal = new bootstrap.Modal(document.getElementById('aiApiModal'));
+    this.spouseModal = new bootstrap.Modal(document.getElementById('spouseModal'));
     this.childModal = new bootstrap.Modal(document.getElementById('childModal'));
 
     this.ai.key = localStorage.getItem('ai_api_key');
@@ -102,7 +104,7 @@ export const app = () => ({
     this.form = randomizeCharacter(this.fakers, this.schema, this.locale);
     this.buildOutput();
 
-    if (this.ai.enabled) {
+    if (this.ai.enabled && this.ai.key) {
         try {
             const imageUrl = await generateImage(this.ai.key, this.ai.provider, this.form, this.locale, (key) => this.t(key));
             this.ai.imageUrl = imageUrl;
@@ -125,14 +127,14 @@ export const app = () => ({
     }
   },
 
-  openAiModal() { this.spouseModal.show(); },
+  openAiModal() { this.aiApiModal.show(); },
   
   saveApiKey() {
     if (this.ai.key) {
       localStorage.setItem('ai_api_key', this.ai.key);
       localStorage.setItem('ai_provider', this.ai.provider);
       this.ai.enabled = true;
-      this.spouseModal.hide();
+      this.aiApiModal.hide();
       this.ai.error = null;
     }
   },
@@ -142,7 +144,7 @@ export const app = () => ({
     localStorage.removeItem('ai_provider');
     this.ai.key = null;
     this.ai.enabled = false;
-    this.spouseModal.hide();
+    this.aiApiModal.hide();
   },
 
   buildOutput() {
