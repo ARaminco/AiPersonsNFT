@@ -189,6 +189,42 @@ Alpine.data('app', () => ({
     const fk = this.fakers[this.locale];
     const isFa = this.locale === 'fa';
 
+    const iranianLocations = [
+        { city: 'تهران', accent: 'تهرانی', languages: ['فارسی'] },
+        { city: 'اصفهان', accent: 'اصفهانی', languages: ['فارسی'] },
+        { city: 'تبریز', accent: 'ترکی', languages: ['ترکی', 'فارسی'] },
+        { city: 'مشهد', accent: 'مشهدی', languages: ['فارسی'] },
+        { city: 'شیراز', accent: 'شیرازی', languages: ['فارسی'] },
+        { city: 'سنندج', accent: 'کردی', languages: ['کردی', 'فارسی'] },
+        { city: 'اهواز', accent: 'جنوبی', languages: ['فارسی', 'عربی'] },
+    ];
+    const worldLocations = [
+        { country: 'United States', nationality: 'American', cities: ['New York', 'Los Angeles', 'Chicago'], mainLanguage: 'English', accents: ['New York', 'Californian', 'Midwestern'] },
+        { country: 'France', nationality: 'French', cities: ['Paris', 'Marseille', 'Lyon'], mainLanguage: 'French', accents: ['Parisian', 'Southern French'] },
+        { country: 'Japan', nationality: 'Japanese', cities: ['Tokyo', 'Osaka', 'Kyoto'], mainLanguage: 'Japanese', accents: ['Tokyo', 'Kansai'] },
+        { country: 'Germany', nationality: 'German', cities: ['Berlin', 'Munich', 'Hamburg'], mainLanguage: 'German', accents: ['Berliner', 'Bavarian'] },
+        { country: 'Brazil', nationality: 'Brazilian', cities: ['São Paulo', 'Rio de Janeiro'], mainLanguage: 'Portuguese', accents: ['Paulista', 'Carioca'] },
+    ];
+    
+    let nationality, birth_place, residence, languages, accent;
+    if (isFa) {
+        const birthLocation = fk.helpers.arrayElement(iranianLocations);
+        nationality = 'ایرانی';
+        birth_place = birthLocation.city;
+        languages = [...birthLocation.languages];
+        if (Math.random() < 0.7) languages.push('انگلیسی');
+        accent = birthLocation.accent;
+        residence = fk.helpers.weightedArrayElement([{weight: 7, value: birth_place}, {weight: 3, value: fk.helpers.arrayElement(iranianLocations).city}]);
+    } else {
+        const worldLocation = fk.helpers.arrayElement(worldLocations);
+        nationality = worldLocation.nationality;
+        birth_place = fk.helpers.arrayElement(worldLocation.cities);
+        languages = [worldLocation.mainLanguage];
+        if (worldLocation.mainLanguage !== 'English' && Math.random() < 0.9) languages.push('English');
+        accent = fk.helpers.arrayElement(worldLocation.accents);
+        residence = fk.helpers.weightedArrayElement([{weight: 7, value: birth_place}, {weight: 3, value: fk.helpers.arrayElement(worldLocation.cities)}]);
+    }
+
     const characterGender = fk.helpers.arrayElement(this.schema.identity.find(f => f.key === 'gender').options);
     const fatherLastName = isFa ? fk.person.lastName() : fk.person.lastName('male');
     let paternalLastName, characterLastName;
@@ -215,11 +251,8 @@ Alpine.data('app', () => ({
         is_alive: fk.helpers.weightedArrayElement([{weight: 9, value: true}, {weight: 1, value: false}]),
         gender: characterGender,
         marital_status: fk.helpers.arrayElement(this.schema.identity.find(f => f.key === 'marital_status').options),
-        nationality: isFa ? 'ایرانی' : fk.location.country(),
-        birth_place: fk.location.city(),
-        residence: fk.location.city(),
+        nationality, birth_place, residence, languages,
         occupation: fk.helpers.arrayElement(isFa ? ['معلم', 'مهندس نرم‌افزار', 'پزشک عمومی', 'جراح مغز و اعصاب', 'هنرمند تجسمی', 'نویسنده', 'نجار', 'راننده تاکسی', 'برنامه‌نویس وب', 'آشپز', 'مغازه‌دار', 'وکیل', 'استاد دانشگاه', 'دانشمند داده', 'معمار', 'گرافیست', 'خلبان', 'روزنامه‌نگار', 'عکاس'] : ['Teacher', 'Software Engineer', 'General Practitioner', 'Neurosurgeon', 'Visual Artist', 'Writer', 'Carpenter', 'Taxi Driver', 'Web Developer', 'Chef', 'Shopkeeper', 'Lawyer', 'Professor', 'Data Scientist', 'Architect', 'Graphic Designer', 'Pilot', 'Journalist', 'Photographer']),
-        languages: fk.helpers.arrayElements(isFa ? ['فارسی','انگلیسی','ترکی', 'ارمنی', 'کردی'] : ['English','Spanish','French','German', 'Mandarin'], {min:1, max:3}),
     };
     this.form.identity.dod = this.form.identity.is_alive ? '' : fk.date.past({years: Math.min(age, 15), refDate: new Date()}).toISOString().split('T')[0];
     
@@ -232,7 +265,6 @@ Alpine.data('app', () => ({
             dob: spouseDob.toISOString().split('T')[0],
             status: fk.helpers.weightedArrayElement([{weight: 9, value: 'alive'}, {weight: 1, value: 'deceased'}])
         };
-
         const canHaveChildren = this.form.identity.marital_status === 'married' || this.form.identity.marital_status === 'widowed';
         if (canHaveChildren && age > 22) {
             const numChildren = fk.number.int({min: 0, max: 4});
@@ -240,11 +272,9 @@ Alpine.data('app', () => ({
             for (let i = 0; i < numChildren; i++) {
                 const earliestBirthYear = motherDob.getFullYear() + 18;
                 const latestBirthYear = motherDob.getFullYear() + 45;
-                if (latestBirthYear <= earliestBirthYear || new Date().getFullYear() < earliestBirthYear) continue;
-
                 const validStartYear = earliestBirthYear;
                 const validEndYear = Math.min(latestBirthYear, new Date().getFullYear());
-                if(validStartYear > validEndYear) continue;
+                if(validStartYear >= validEndYear) continue;
                 
                 const childBirthYear = fk.number.int({min: validStartYear, max: validEndYear});
                 const childDob = fk.date.between({ from: new Date(childBirthYear, 0, 1), to: new Date(childBirthYear, 11, 31) });
@@ -274,7 +304,6 @@ Alpine.data('app', () => ({
         face_shape: fk.helpers.arrayElement(this.schema.physical.find(f => f.key === 'face_shape').options),
         distinguishing_marks: fk.helpers.arrayElements(isFa ? ['خال روی گونه چپ', 'جای زخم کوچک روی پیشانی', 'تتو روی مچ دست', 'کک و مک روی بینی', 'چشمانی نافذ', 'ابروهای پرپشت'] : ['mole on left cheek', 'small scar on forehead', 'tattoo on wrist', 'freckles across nose', 'piercing eyes', 'thick eyebrows'], {min: 1, max: 2})
     };
-    
     this.form.psychology = {
       personality_type: fk.helpers.arrayElement(this.schema.psychology.personality_type.options),
       traits: fk.helpers.arrayElements(this.schema.psychology.traits.options, {min:4, max:7}).map(tr => ({ name: tr, intensity: Math.round(fk.number.int({ min: 20, max: 95 }) / 5) * 5 })),
@@ -285,7 +314,7 @@ Alpine.data('app', () => ({
       voice_gender: fk.helpers.arrayElement(this.schema.voice.find(f => f.key === 'voice_gender').options),
       tone: fk.helpers.arrayElement(this.schema.voice.find(f => f.key === 'tone').options),
       pace: fk.helpers.arrayElement(this.schema.voice.find(f => f.key === 'pace').options),
-      accent: fk.helpers.arrayElement(isFa ? ['تهرانی', 'اصفهانی', 'شیرازی', 'بدون لهجه', 'شمالی'] : ['Standard American', 'British RP', 'Slight Southern Drawl', 'New York', 'Mid-Atlantic']),
+      accent: accent,
       catchphrases: fk.helpers.arrayElements(isFa ? ['در واقع...', 'می‌دونی چی میگم؟', 'خلاصه که...', 'عملاً', 'به هر حال...'] : ['You know?', 'Actually...', 'Basically...', 'Long story short...', 'At the end of the day...'], {min:1, max:2})
     };
     this.form.movement = {
