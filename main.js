@@ -1,5 +1,6 @@
 import Alpine from 'alpinejs';
 import { Faker, en, fa } from '@faker-js/faker';
+import * as bootstrap from 'bootstrap';
 
 import 'bootstrap/dist/css/bootstrap.rtl.min.css';
 import 'bootstrap-icons/font/bootstrap-icons.css';
@@ -10,10 +11,15 @@ Alpine.data('app', () => ({
   activeTab: 'identity',
   fakers: {},
   copyStatus: 'copy',
+  spouseModal: null,
+  childModal: null,
   i18n:{
     fa:{
       identity:'هویت', family: 'شجره‌نامه', physical:'ظاهر', psychology:'روانشناسی', voice:'صدا', movement:'حرکات', health:'سلامت و بیوگرافی',
       parents: 'والدین', spouse: 'همسر', children: 'فرزندان', status: 'وضعیت', age: 'سن',
+      add: 'افزودن', edit: 'ویرایش', save: 'ذخیره', cancel: 'لغو', delete: 'حذف',
+      add_child: 'افزودن فرزند', edit_child: 'ویرایش فرزند', edit_spouse: 'ویرایش همسر',
+      no_spouse_data: 'اطلاعات همسر ثبت نشده است.', no_children_data: 'فرزندی ثبت نشده است.',
       select_option:'انتخاب کنید', randomize:'ایجاد رندوم', build_json:'ساخت JSON', copy:'کپی', copied: 'کپی شد!', download:'دانلود',
       name:'نام کامل', dob:'تاریخ تولد', is_alive:'در قید حیات', dod:'تاریخ فوت', gender:'جنسیت', nationality:'ملیت', birth_place:'محل تولد',
       marital_status:'وضعیت تاهل', father_name:"نام پدر", mother_name:"نام مادر", father_status:"وضعیت پدر", mother_status:"وضعیت مادر",
@@ -43,6 +49,9 @@ Alpine.data('app', () => ({
     en:{
       identity:'Identity', family: 'Family Tree', physical:'Appearance', psychology:'Psychology', voice:'Voice', movement:'Movement', health:'Health & Bio',
       parents: 'Parents', spouse: 'Spouse', children: 'Children', status: 'Status', age: 'Age',
+      add: 'Add', edit: 'Edit', save: 'Save', cancel: 'Cancel', delete: 'Delete',
+      add_child: 'Add Child', edit_child: 'Edit Child', edit_spouse: 'Edit Spouse',
+      no_spouse_data: 'No spouse data has been entered.', no_children_data: 'No children have been entered.',
       select_option:'Select...', randomize:'Randomize', build_json:'Build JSON', copy:'Copy', copied: 'Copied!', download:'Download',
       name:'Full Name', dob:'Date of Birth', is_alive:'Is Alive', dod:'Date of Death', gender:'Gender', nationality:'Nationality', birth_place:'Birth Place',
       marital_status:'Marital Status', father_name:"Father's Name", mother_name:"Mother's Name", father_status:"Father's Status", mother_status:"Mother's Status",
@@ -72,30 +81,21 @@ Alpine.data('app', () => ({
   },
   schema:{
     identity:[
-      {key:'name', type:'string', label:'name', default:''},
-      {key:'dob', type:'date', label:'dob', default:''},
-      {key:'is_alive', type:'boolean', label:'is_alive', default: true},
-      {key:'dod', type:'date', label:'dod', default:''},
+      {key:'name', type:'string', label:'name', default:''}, {key:'dob', type:'date', label:'dob', default:''},
+      {key:'is_alive', type:'boolean', label:'is_alive', default: true}, {key:'dod', type:'date', label:'dod', default:''},
       {key:'gender', type:'enum', label:'gender', options:['male','female'], default:''},
       {key:'marital_status', type:'enum', label:'marital_status', options:['single','married','divorced','widowed'], default:''},
-      {key:'nationality', type:'string', label:'nationality', default:''},
-      {key:'birth_place', type:'string', label:'birth_place', default:''},
-      {key:'residence', type:'string', label:'residence', default:''},
-      {key:'occupation', type:'string', label:'occupation', default:''},
-      {key:'languages', type:'array', label:'languages', default:[]},
-      {key:'description', type:'textarea', label:'description', default:''},
+      {key:'nationality', type:'string', label:'nationality', default:''}, {key:'birth_place', type:'string', label:'birth_place', default:''},
+      {key:'residence', type:'string', label:'residence', default:''}, {key:'occupation', type:'string', label:'occupation', default:''},
+      {key:'languages', type:'array', label:'languages', default:[]}, {key:'description', type:'textarea', label:'description', default:''},
     ],
     family: [
-        { key: 'father_name', type: 'string', label: 'father_name', group: 'parents' },
-        { key: 'father_status', type: 'enum', label: 'father_status', group: 'parents', options:['alive','deceased'] },
-        { key: 'mother_name', type: 'string', label: 'mother_name', group: 'parents' },
-        { key: 'mother_status', type: 'enum', label: 'mother_status', group: 'parents', options:['alive','deceased'] },
+        { key: 'father_name', type: 'string', label: 'father_name', group: 'parents' }, { key: 'father_status', type: 'enum', label: 'father_status', group: 'parents', options:['alive','deceased'] },
+        { key: 'mother_name', type: 'string', label: 'mother_name', group: 'parents' }, { key: 'mother_status', type: 'enum', label: 'mother_status', group: 'parents', options:['alive','deceased'] },
     ],
     physical:[
-      {key:'height_cm', type:'number', label:'height_cm', min:50, max:250, default:175, suffix:'cm'},
-      {key:'weight_kg', type:'number', label:'weight_kg', min:3, max:300, default:75, suffix:'kg'},
-      {key:'skin_tone', type:'enum', label:'skin_tone', options:['fair', 'light', 'olive', 'brown', 'dark']},
-      {key:'build', type:'enum', label:'build', options:['slim', 'athletic', 'average', 'stout', 'muscular', 'heavy']},
+      {key:'height_cm', type:'number', label:'height_cm', min:50, max:250, default:175, suffix:'cm'}, {key:'weight_kg', type:'number', label:'weight_kg', min:3, max:300, default:75, suffix:'kg'},
+      {key:'skin_tone', type:'enum', label:'skin_tone', options:['fair', 'light', 'olive', 'brown', 'dark']}, {key:'build', type:'enum', label:'build', options:['slim', 'athletic', 'average', 'stout', 'muscular', 'heavy']},
       {key:'clothing_style', type:'enum', label:'clothing_style', options:['casual', 'formal', 'vintage', 'modern', 'sporty']},
       {key:'hair_color', type:'enum', label:'hair_color', options:['black_hair','brown_hair','blonde','red','gray_hair','white']},
       {key:'eye_color', type:'enum', label:'eye_color', options:['brown_eye','black_eye','blue','green','gray','hazel']},
@@ -105,36 +105,26 @@ Alpine.data('app', () => ({
     psychology:{
       personality_type:{type:'enum', options:['INTJ','INTP','INFJ','INFP','ISTJ','ISTP','ISFJ','ISFP','ENTJ','ENTP','ENFJ','ENFP','ESTJ','ESTP','ESFJ','ESFP']},
       traits:{type:'traits', options:['kind','curious','aggressive','patient','brave','anxious','optimistic','pessimistic','perfectionist','impulsive','creative','analytical','dominant','submissive','humorous','serious','empathetic','stoic','ambitious','lazy']},
-      values:{type:'array', default:['honesty']},
-      fears:{type:'array', default:['failure']}
+      values:{type:'array', default:[]}, fears:{type:'array', default:[]}
     },
     voice:[
-      {key:'voice_gender', type:'enum', label:'voice_gender', options:['male','female','neutral']},
-      {key:'tone', type:'enum', label:'tone', options:['calm','energetic','formal','casual','warm','cold']},
-      {key:'pace', type:'enum', label:'pace', options:['slow','moderate','fast']},
-      {key:'accent', type:'string', label:'accent'},
-      {key:'catchphrases', type:'array', label:'catchphrases'},
+      {key:'voice_gender', type:'enum', label:'voice_gender', options:['male','female','neutral']}, {key:'tone', type:'enum', label:'tone', options:['calm','energetic','formal','casual','warm','cold']},
+      {key:'pace', type:'enum', label:'pace', options:['slow','moderate','fast']}, {key:'accent', type:'string', label:'accent'}, {key:'catchphrases', type:'array', label:'catchphrases'},
     ],
     movement:[
-      {key:'posture', type:'enum', label:'posture', options:['straight_posture','relaxed','slouched']},
-      {key:'gait', type:'enum', label:'gait', options:['slow','medium_gait','fast','confident','limping']},
-      {key:'gestures', type:'array', label:'gestures'},
-      {key:'notes', type:'string', label:'notes'},
+      {key:'posture', type:'enum', label:'posture', options:['straight_posture','relaxed','slouched']}, {key:'gait', type:'enum', label:'gait', options:['slow','medium_gait','fast','confident','limping']},
+      {key:'gestures', type:'array', label:'gestures'}, {key:'notes', type:'string', label:'notes'},
     ],
-    health:[
-      {key:'medical_conditions', type:'array', label:'medical_conditions'},
-      {key:'bio', type:'textarea', label:'bio'},
-    ]
+    health:[ {key:'medical_conditions', type:'array', label:'medical_conditions'}, {key:'bio', type:'textarea', label:'bio'}, ]
   },
   form:{ identity:{}, family:{ spouse: null, children: [] }, physical:{}, psychology:{}, voice:{}, movement:{}, health:{} },
-  temp:{inputs:{}, customTrait:{name:'', intensity:50}},
+  temp:{inputs:{}, customTrait:{name:'', intensity:50}, editingSpouse: null, editingChild: null, editingChildIndex: null},
   output:'',
   
   init(){
-    this.fakers = {
-      en: new Faker({ locale: en }),
-      fa: new Faker({ locale: [fa, en] })
-    };
+    this.fakers = { en: new Faker({ locale: en }), fa: new Faker({ locale: [fa, en] }) };
+    this.spouseModal = new bootstrap.Modal(document.getElementById('spouseModal'));
+    this.childModal = new bootstrap.Modal(document.getElementById('childModal'));
     this.resetForm();
     this.buildOutput();
   },
@@ -161,7 +151,7 @@ Alpine.data('app', () => ({
     this.form.family.spouse = null;
     this.form.family.children = [];
   },
-
+  
   t(k){return (this.i18n[this.locale]&&this.i18n[this.locale][k])||k.replace(/_hair|_eye/g, '')},
 
   getAge(dob) {
@@ -177,6 +167,7 @@ Alpine.data('app', () => ({
   generateBio() {
     const { identity, family, psychology } = this.form;
     const age = this.getAge(identity.dob);
+    if (!age) return '';
     const mainTraits = psychology.traits.slice(0, 2).map(t => this.t(t.name) || t.name).join(' و ');
     const mainValue = psychology.values[0] || '';
 
@@ -188,7 +179,7 @@ Alpine.data('app', () => ({
     }
     
     let bio = `${identity.name}, a ${age}-year-old ${identity.occupation} residing in ${identity.residence}. Born in ${identity.birth_place}, they are known for being ${mainTraits}. Their core value is ${mainValue}.`;
-    if (family.spouse) { bio += ` They live with ${family.spouse.name} (spouse, ${this.t(family.spouse.status)}).`}
+    if (family.spouse) { bio += ` They are in a relationship with ${family.spouse.name} (spouse, ${this.t(family.spouse.status)}).`}
     if (family.children.length > 0) { bio += ` They have ${family.children.length} children.`}
     return bio;
   },
@@ -198,27 +189,23 @@ Alpine.data('app', () => ({
     const fk = this.fakers[this.locale];
     const isFa = this.locale === 'fa';
 
-    // === 1. Define Family Names ===
     const characterGender = fk.helpers.arrayElement(this.schema.identity.find(f => f.key === 'gender').options);
     const fatherLastName = isFa ? fk.person.lastName() : fk.person.lastName('male');
     let paternalLastName, characterLastName;
-
+    
     if (characterGender === 'male') {
         paternalLastName = fatherLastName;
         characterLastName = fatherLastName;
-    } else { // Character is female, she keeps her father's last name
+    } else {
         characterLastName = fatherLastName;
-        // The family name will be determined by her future spouse
         paternalLastName = isFa ? fk.person.lastName() : fk.person.lastName('male');
     }
     
-    // === 2. Generate Parents ===
     this.form.family.father_name = fk.person.firstName('male') + ' ' + fatherLastName;
     this.form.family.father_status = fk.helpers.arrayElement(this.schema.family.find(f => f.key === 'father_status').options);
     this.form.family.mother_name = fk.person.firstName('female') + ' ' + (isFa ? fk.person.lastName() : fk.person.lastName('female'));
     this.form.family.mother_status = fk.helpers.arrayElement(this.schema.family.find(f => f.key === 'mother_status').options);
 
-    // === 3. Generate Main Character ===
     const dob = fk.date.birthdate({ min: 18, max: 80, mode: 'age' });
     const age = this.getAge(dob);
     
@@ -231,32 +218,36 @@ Alpine.data('app', () => ({
         nationality: isFa ? 'ایرانی' : fk.location.country(),
         birth_place: fk.location.city(),
         residence: fk.location.city(),
-        occupation: fk.helpers.arrayElement(isFa ? ['معلم', 'مهندس', 'پزشک', 'هنرمند', 'نویسنده', 'نجار', 'راننده', 'برنامه‌نویس', 'آشپز', 'مغازه‌دار'] : ['Teacher', 'Engineer', 'Doctor', 'Artist', 'Writer', 'Carpenter', 'Driver', 'Developer', 'Chef', 'Shopkeeper']),
+        occupation: fk.helpers.arrayElement(isFa ? ['معلم', 'مهندس نرم‌افزار', 'پزشک عمومی', 'جراح مغز و اعصاب', 'هنرمند تجسمی', 'نویسنده', 'نجار', 'راننده تاکسی', 'برنامه‌نویس وب', 'آشپز', 'مغازه‌دار', 'وکیل', 'استاد دانشگاه', 'دانشمند داده', 'معمار', 'گرافیست', 'خلبان', 'روزنامه‌نگار', 'عکاس'] : ['Teacher', 'Software Engineer', 'General Practitioner', 'Neurosurgeon', 'Visual Artist', 'Writer', 'Carpenter', 'Taxi Driver', 'Web Developer', 'Chef', 'Shopkeeper', 'Lawyer', 'Professor', 'Data Scientist', 'Architect', 'Graphic Designer', 'Pilot', 'Journalist', 'Photographer']),
         languages: fk.helpers.arrayElements(isFa ? ['فارسی','انگلیسی','ترکی', 'ارمنی', 'کردی'] : ['English','Spanish','French','German', 'Mandarin'], {min:1, max:3}),
     };
     this.form.identity.dod = this.form.identity.is_alive ? '' : fk.date.past({years: Math.min(age, 15), refDate: new Date()}).toISOString().split('T')[0];
     
-    // === 4. Generate Spouse & Children ===
     if (this.form.identity.marital_status !== 'single' && age > 20) {
         const spouseGender = characterGender === 'male' ? 'female' : 'male';
         const spouseDob = fk.date.birthdate({min: Math.max(18, age - 5), max: age + 5, mode: 'age'});
-        const spouseLastName = (spouseGender === 'male') ? paternalLastName : paternalLastName; // Spouse takes the paternal last name
+        const spouseLastName = paternalLastName;
         this.form.family.spouse = {
             name: fk.person.firstName(spouseGender) + ' ' + spouseLastName,
             dob: spouseDob.toISOString().split('T')[0],
             status: fk.helpers.weightedArrayElement([{weight: 9, value: 'alive'}, {weight: 1, value: 'deceased'}])
         };
 
-        const canHaveChildren = this.form.identity.marital_status !== 'divorced';
+        const canHaveChildren = this.form.identity.marital_status === 'married' || this.form.identity.marital_status === 'widowed';
         if (canHaveChildren && age > 22) {
             const numChildren = fk.number.int({min: 0, max: 4});
-            const motherDob = (characterGender === 'female' ? dob : spouseDob);
+            const motherDob = (characterGender === 'female' ? new Date(dob) : new Date(spouseDob));
             for (let i = 0; i < numChildren; i++) {
-                const earliestBirthYear = new Date(motherDob).getFullYear() + 18;
-                const latestBirthYear = new Date(motherDob).getFullYear() + 45;
+                const earliestBirthYear = motherDob.getFullYear() + 18;
+                const latestBirthYear = motherDob.getFullYear() + 45;
                 if (latestBirthYear <= earliestBirthYear || new Date().getFullYear() < earliestBirthYear) continue;
 
-                const childDob = fk.date.birthdate({ refDate: new Date(Math.min(new Date().getFullYear() - 1, latestBirthYear),1,1), min: 1, max: new Date().getFullYear() - earliestBirthYear });
+                const validStartYear = earliestBirthYear;
+                const validEndYear = Math.min(latestBirthYear, new Date().getFullYear());
+                if(validStartYear > validEndYear) continue;
+                
+                const childBirthYear = fk.number.int({min: validStartYear, max: validEndYear});
+                const childDob = fk.date.between({ from: new Date(childBirthYear, 0, 1), to: new Date(childBirthYear, 11, 31) });
                 const childGender = fk.helpers.arrayElement(['male', 'female']);
                 this.form.family.children.push({
                     name: fk.person.firstName(childGender) + ' ' + paternalLastName,
@@ -268,25 +259,22 @@ Alpine.data('app', () => ({
         }
     }
     
-    // === 5. Generate Detailed Appearance ===
     let height, weight;
     if (age <= 1) { height = fk.number.int({ min: 50, max: 75 }); weight = fk.number.int({ min: 3, max: 10 }); } 
     else if (age <= 12) { height = 75 + (age - 1) * 6; weight = 10 + (age - 1) * 2.5; } 
     else if (age <= 20) { height = 140 + (age - 12) * (characterGender === 'male' ? 4 : 3); weight = 35 + (age - 12) * 4; } 
     else { height = characterGender === 'male' ? fk.number.int({ min: 165, max: 195 }) : fk.number.int({ min: 155, max: 180 }); const baseWeight = (height - 100) * 0.9; weight = Math.round(baseWeight + fk.number.int({min: -10, max: 15})); }
     this.form.physical = {
-        height_cm: Math.min(Math.round(height), 250),
-        weight_kg: Math.min(Math.round(weight), 300),
+        height_cm: Math.min(Math.round(height), 250), weight_kg: Math.min(Math.round(weight), 300),
         skin_tone: fk.helpers.arrayElement(this.schema.physical.find(f => f.key === 'skin_tone').options),
         build: fk.helpers.arrayElement(this.schema.physical.find(f => f.key === 'build').options),
         clothing_style: fk.helpers.arrayElement(this.schema.physical.find(f => f.key === 'clothing_style').options),
         hair_color: fk.helpers.arrayElement(this.schema.physical.find(f => f.key === 'hair_color').options),
         eye_color: fk.helpers.arrayElement(this.schema.physical.find(f => f.key === 'eye_color').options),
         face_shape: fk.helpers.arrayElement(this.schema.physical.find(f => f.key === 'face_shape').options),
-        distinguishing_marks: fk.helpers.arrayElements(isFa ? ['خال روی گونه چپ', 'جای زخم کوچک روی پیشانی', 'تتو روی مچ دست', 'کک و مک روی بینی', 'چشمانی نافذ'] : ['mole on left cheek', 'small scar on forehead', 'tattoo on wrist', 'freckles across nose', 'piercing eyes'], {min: 1, max: 2})
+        distinguishing_marks: fk.helpers.arrayElements(isFa ? ['خال روی گونه چپ', 'جای زخم کوچک روی پیشانی', 'تتو روی مچ دست', 'کک و مک روی بینی', 'چشمانی نافذ', 'ابروهای پرپشت'] : ['mole on left cheek', 'small scar on forehead', 'tattoo on wrist', 'freckles across nose', 'piercing eyes', 'thick eyebrows'], {min: 1, max: 2})
     };
     
-    // === 6. Generate Other Details ===
     this.form.psychology = {
       personality_type: fk.helpers.arrayElement(this.schema.psychology.personality_type.options),
       traits: fk.helpers.arrayElements(this.schema.psychology.traits.options, {min:4, max:7}).map(tr => ({ name: tr, intensity: Math.round(fk.number.int({ min: 20, max: 95 }) / 5) * 5 })),
@@ -310,18 +298,24 @@ Alpine.data('app', () => ({
       medical_conditions: fk.datatype.boolean(0.5) ? fk.helpers.arrayElements(isFa ? ['آلرژی فصلی', 'کمی نزدیک‌بین', 'میگرن گهگاهی', 'فشار خون بالا'] : ['Pollen allergy', 'Slightly nearsighted', 'Occasional migraines', 'High blood pressure'], {min:1, max:2}) : [],
     };
     
-    // === 7. Generate Bio & Finalize ===
     this.form.identity.description = this.generateBio();
     this.form.health.bio = this.generateBio();
     this.buildOutput();
   },
+
+  openSpouseModal() { this.temp.editingSpouse = JSON.parse(JSON.stringify(this.form.family.spouse || { name: '', dob: '', status: 'alive' })); this.spouseModal.show(); },
+  saveSpouse() { this.form.family.spouse = JSON.parse(JSON.stringify(this.temp.editingSpouse)); this.spouseModal.hide(); this.buildOutput(); },
+  removeSpouse() { this.form.family.spouse = null; this.spouseModal.hide(); this.buildOutput(); },
+  openChildModal(child = null, index = null) { this.temp.editingChildIndex = index; this.temp.editingChild = JSON.parse(JSON.stringify(child || { name: '', gender: 'male', dob: '', status: 'alive' })); this.childModal.show(); },
+  saveChild() { if (this.temp.editingChildIndex !== null) { this.form.family.children[this.temp.editingChildIndex] = JSON.parse(JSON.stringify(this.temp.editingChild)); } else { this.form.family.children.push(JSON.parse(JSON.stringify(this.temp.editingChild))); } this.childModal.hide(); this.buildOutput(); },
+  removeChild(index) { this.form.family.children.splice(index, 1); this.buildOutput(); },
   
   addArrayItem(section,key){ const v=(this.temp.inputs[key]||'').trim(); if(!v) return; this.form[section][key] = this.form[section][key] || []; if (!this.form[section][key].includes(v)) { this.form[section][key].push(v); } this.temp.inputs[key]=''; this.buildOutput(); },
   removeArrayItem(section,key,idx){ this.form[section][key].splice(idx,1); this.buildOutput(); },
   toggleTrait(name){ const i=this.form.psychology.traits.findIndex(x=>x.name===name); if(i>-1){ this.form.psychology.traits.splice(i,1) } else{ this.form.psychology.traits.push({name, intensity:60}) } this.buildOutput(); },
   addCustomTrait(){ const n=this.temp.customTrait.name.trim(); if(!n) return; const i=this.form.psychology.traits.findIndex(x=>x.name===n); if(i>-1){ this.form.psychology.traits[i].intensity=this.temp.customTrait.intensity } else{ this.form.psychology.traits.push({name:n, intensity:this.temp.customTrait.intensity}) } this.temp.customTrait={name:'', intensity:50}; this.buildOutput(); },
   removeTrait(idx){ this.form.psychology.traits.splice(idx,1); this.buildOutput(); },
-  buildOutput(){ try { const cleanForm = JSON.parse(JSON.stringify(this.form)); if (cleanForm.identity && cleanForm.identity.is_alive) { cleanForm.identity.dod = null; } this.output=JSON.stringify(cleanForm,null,2); } catch (error) { console.error("Failed to build JSON output:", error); this.output = "Error: Could not generate JSON. Check console for details."; } },
+  buildOutput(){ try { const cleanForm = JSON.parse(JSON.stringify(this.form)); if (cleanForm.identity && cleanForm.identity.is_alive) { cleanForm.identity.dod = null; } this.output=JSON.stringify(cleanForm,null,2); } catch (error) { console.error("Failed to build JSON output:", error, this.form); this.output = "Error: Could not generate JSON. Check console for details."; } },
   copyJSON(){ navigator.clipboard.writeText(this.output).then(() => { this.copyStatus = 'copied'; setTimeout(() => { this.copyStatus = 'copy' }, 2000); }); },
   downloadJSON(){ const blob=new Blob([this.output],{type:'application/json'}); const url=URL.createObjectURL(blob); const a=document.createElement('a'); const filename = (this.form.identity.name || 'character').replace(/ /g, '_').toLowerCase(); a.href=url; a.download=`${filename}.json`; a.click(); URL.revokeObjectURL(url); }
 }));
