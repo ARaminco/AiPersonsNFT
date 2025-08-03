@@ -1,0 +1,230 @@
+<!doctype html>
+<html lang="fa" dir="rtl">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>سازندهٔ شخصیت (Vite)</title>
+  <link href="https://fonts.googleapis.com/css2?family=Vazirmatn:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+</head>
+<body x-data="app" class="container py-4">
+
+  <header class="main-header">
+    <h1 class="fs-3 fw-bold m-0"><i class="bi bi-person-bounding-box text-primary"></i> سازندهٔ شخصیت</h1>
+    <div class="d-flex flex-wrap gap-2">
+      <select class="form-select form-select-sm" x-model="locale" style="width:160px">
+        <option value="fa">🇮🇷 فارسی</option>
+        <option value="en">🇬🇧 English</option>
+      </select>
+      <button class="btn btn-outline-primary btn-sm" @click="randomize()"><i class="bi bi-shuffle me-1"></i> <span x-text="t('randomize')"></span></button>
+      <button class="btn btn-primary btn-sm" @click="buildOutput()"><i class="bi bi-braces me-1"></i> <span x-text="t('build_json')"></span></button>
+    </div>
+  </header>
+
+  <main>
+    <ul class="nav nav-tabs" id="characterTabs" role="tablist">
+      <template x-for="tab in Object.keys(schema)">
+          <li class="nav-item" role="presentation">
+              <button class="nav-link" :class="{'active': activeTab === tab}" @click="activeTab = tab" type="button" x-text="t(tab)"></button>
+          </li>
+      </template>
+    </ul>
+
+    <div class="tab-content" id="characterTabsContent">
+      <template x-for="tab in Object.keys(schema)" :key="tab">
+        <div class="tab-pane fade" :class="{'show active': activeTab === tab}" role="tabpanel">
+          <div class="row g-4">
+            
+            <template x-if="tab === 'identity'">
+                <div class="col-12">
+                    <div class="row g-3">
+                        <template x-for="f in schema.identity">
+                            <div :class="f.type === 'string' && f.key === 'description' ? 'col-12' : 'col-12 col-md-6 col-lg-4'">
+                                <label class="form-label" x-text="t(f.label)"></label>
+                                <template x-if="f.type==='string'"><input class="form-control" type="text" x-model="form.identity[f.key]" :placeholder="t(f.label)"></template>
+                                <template x-if="f.type==='number'"><input class="form-control" type="number" x-model.number="form.identity[f.key]" :min="f.min" :max="f.max"></template>
+                                <template x-if="f.type==='date'"><input class="form-control" type="date" x-model="form.identity[f.key]" :disabled="f.key === 'dod' && form.identity.is_alive"></template>
+                                <template x-if="f.type==='boolean'">
+                                    <div class="form-check form-switch pt-2">
+                                        <input class="form-check-input" type="checkbox" role="switch" x-model="form.identity[f.key]" @change="if(form.identity.is_alive) form.identity.dod = ''">
+                                        <label class="form-check-label" x-text="t(f.label)"></label>
+                                    </div>
+                                </template>
+                                <template x-if="f.type==='enum'">
+                                    <select class="form-select" x-model="form.identity[f.key]">
+                                        <option value="" x-text="t('select_option')"></option>
+                                        <template x-for="opt in f.options"><option :value="opt" x-text="t(opt)"></option></template>
+                                    </select>
+                                </template>
+                                <template x-if="f.type==='array'">
+                                    <div>
+                                        <div class="input-group mb-2">
+                                            <input class="form-control" type="text" x-model="temp.inputs[f.key]" @keydown.enter="addArrayItem('identity', f.key)">
+                                            <button class="btn btn-outline-secondary" @click="addArrayItem('identity', f.key)"><i class="bi bi-plus-lg"></i></button>
+                                        </div>
+                                        <div>
+                                            <template x-for="(v,idx) in form.identity[f.key]">
+                                              <span class="tag-chip"><span x-text="v"></span><button type="button" class="btn-close" @click="removeArrayItem('identity', f.key, idx)"></button></span>
+                                            </template>
+                                        </div>
+                                    </div>
+                                </template>
+                            </div>
+                        </template>
+                    </div>
+                </div>
+            </template>
+            
+            <template x-if="tab === 'physical'">
+                <div class="col-12">
+                    <div class="row g-3">
+                        <template x-for="f in schema.physical">
+                            <div class="col-12 col-md-6 col-lg-4">
+                                <label class="form-label" x-text="t(f.label)"></label>
+                                <template x-if="f.type==='number'">
+                                    <div class="input-group">
+                                        <input class="form-control" type="number" x-model.number="form.physical[f.key]" :min="f.min" :max="f.max">
+                                        <span class="input-group-text" x-text="f.suffix || ''"></span>
+                                    </div>
+                                </template>
+                                <template x-if="f.type==='enum'">
+                                    <select class="form-select" x-model="form.physical[f.key]">
+                                        <option value="" x-text="t('select_option')"></option>
+                                        <template x-for="opt in f.options"><option :value="opt" x-text="t(opt)"></option></template>
+                                    </select>
+                                </template>
+                                <template x-if="f.type==='array'">
+                                  <div>
+                                      <div class="input-group mb-2">
+                                          <input class="form-control" type="text" x-model="temp.inputs[f.key]" @keydown.enter="addArrayItem('physical', f.key)">
+                                          <button class="btn btn-outline-secondary" @click="addArrayItem('physical', f.key)"><i class="bi bi-plus-lg"></i></button>
+                                      </div>
+                                      <div>
+                                        <template x-for="(v,idx) in form.physical[f.key]">
+                                          <span class="tag-chip"><span x-text="v"></span><button type="button" class="btn-close" @click="removeArrayItem('physical', f.key, idx)"></button></span>
+                                        </template>
+                                      </div>
+                                  </div>
+                                </template>
+                            </div>
+                        </template>
+                    </div>
+                </div>
+            </template>
+
+            <template x-if="tab === 'psychology'">
+              <div class="col-12">
+                <div class="row g-4">
+                    <div class="col-12 col-lg-6">
+                        <div class="mb-3">
+                          <label class="form-label" x-text="t('personality_type')"></label>
+                          <select class="form-select" x-model="form.psychology.personality_type">
+                              <option value="">—</option>
+                              <template x-for="opt in schema.psychology.personality_type.options"><option :value="opt" x-text="opt"></option></template>
+                          </select>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label d-block mb-2" x-text="t('traits')"></label>
+                            <div class="d-flex flex-wrap" style="gap: 0.5rem;">
+                                <template x-for="tr in schema.psychology.traits.options">
+                                    <span class="badge badge-option text-bg-light border" @click="toggleTrait(tr)" :class="{'selected': form.psychology.traits.some(t => t.name === tr)}" x-text="t(tr)"></span>
+                                </template>
+                            </div>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label" x-text="t('add_custom_trait')"></label>
+                            <div class="d-flex flex-wrap gap-2">
+                                <input class="form-control flex-grow-1" :placeholder="t('custom_trait_placeholder')" x-model="temp.customTrait.name">
+                                <input class="form-range align-self-center" type="range" min="0" max="100" step="5" x-model.number="temp.customTrait.intensity" style="width:120px">
+                                <span class="badge text-bg-secondary align-self-center" x-text="temp.customTrait.intensity + '%'"></span>
+                                <button class="btn btn-outline-primary" @click="addCustomTrait()"><i class="bi bi-plus-lg"></i></button>
+                            </div>
+                        </div>
+                        <div class="mt-3">
+                          <template x-for="(tr,idx) in form.psychology.traits">
+                              <div class="trait-chip">
+                                <strong x-text="t(tr.name) || tr.name"></strong>
+                                <input type="range" class="form-range" min="0" max="100" step="5" x-model.number="tr.intensity">
+                                <span class="badge text-bg-secondary" x-text="tr.intensity + '%'"></span>
+                                <button class="btn btn-sm btn-link text-danger p-0" @click="removeTrait(idx)">✕</button>
+                              </div>
+                          </template>
+                        </div>
+                    </div>
+                    <div class="col-12 col-lg-6">
+                        <div class="mb-3">
+                            <label class="form-label" x-text="t('values')"></label>
+                            <div class="input-group mb-2">
+                                <input class="form-control" type="text" x-model="temp.inputs.values" @keydown.enter="addArrayItem('psychology', 'values')">
+                                <button class="btn btn-outline-secondary" @click="addArrayItem('psychology', 'values')"><i class="bi bi-plus-lg"></i></button>
+                            </div>
+                            <div><template x-for="(v,i) in form.psychology.values"><span class="tag-chip"><span x-text="v"></span><button class="btn-close" @click="removeArrayItem('psychology','values',i)"></button></span></template></div>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label" x-text="t('fears')"></label>
+                            <div class="input-group mb-2">
+                                <input class="form-control" type="text" x-model="temp.inputs.fears" @keydown.enter="addArrayItem('psychology', 'fears')">
+                                <button class="btn btn-outline-secondary" @click="addArrayItem('psychology', 'fears')"><i class="bi bi-plus-lg"></i></button>
+                            </div>
+                            <div><template x-for="(v,i) in form.psychology.fears"><span class="tag-chip"><span x-text="v"></span><button class="btn-close" @click="removeArrayItem('psychology','fears',i)"></button></span></template></div>
+                        </div>
+                    </div>
+                </div>
+              </div>
+            </template>
+
+            <template x-if="['voice', 'movement', 'health'].includes(tab)">
+              <div class="col-12">
+                  <div class="row g-3">
+                      <template x-for="f in schema[tab]">
+                          <div :class="f.type === 'textarea' ? 'col-12' : 'col-12 col-md-6'">
+                              <label class="form-label" x-text="t(f.label)"></label>
+                              <template x-if="f.type==='enum'">
+                                  <select class="form-select" x-model="form[tab][f.key]">
+                                      <option :value="''" x-text="t('select_option')"></option>
+                                      <template x-for="opt in f.options"><option :value="opt" x-text="t(opt)"></option></template>
+                                  </select>
+                              </template>
+                              <template x-if="f.type==='string'"><input class="form-control" type="text" x-model="form[tab][f.key]"></template>
+                              <template x-if="f.type==='textarea'"><textarea class="form-control" rows="4" x-model="form[tab][f.key]"></textarea></template>
+                              <template x-if="f.type==='array'">
+                                  <div>
+                                      <div class="input-group mb-2">
+                                          <input class="form-control" type="text" x-model="temp.inputs[f.key]" @keydown.enter="addArrayItem(tab, f.key)">
+                                          <button class="btn btn-outline-secondary" @click="addArrayItem(tab, f.key)"><i class="bi bi-plus-lg"></i></button>
+                                      </div>
+                                      <div><template x-for="(v,idx) in form[tab][f.key]"><span class="tag-chip"><span x-text="v"></span><button class="btn-close" @click="removeArrayItem(tab, f.key, idx)"></button></span></template></div>
+                                  </div>
+                              </template>
+                          </div>
+                      </template>
+                  </div>
+              </div>
+            </template>
+
+          </div>
+        </div>
+      </template>
+    </div>
+  </main>
+
+
+  <section class="mt-4">
+    <div class="card">
+      <div class="card-header bg-light d-flex align-items-center justify-content-between">
+        <h2 class="fs-5 m-0" x-text="t('output_json')"></h2>
+        <div class="d-flex gap-2">
+          <button class="btn btn-outline-secondary btn-sm" @click="copyJSON()"><i class="bi bi-clipboard me-1"></i> <span x-text="t(copyStatus)"></span></button>
+          <button class="btn btn-success btn-sm" @click="downloadJSON()"><i class="bi bi-download me-1"></i> <span x-text="t('download')"></span></button>
+        </div>
+      </div>
+      <div class="card-body p-0">
+        <pre x-text="output"></pre>
+      </div>
+    </div>
+  </section>
+  
+  <script type="module" src="/main.js"></script>
+  
+</body>
+</html>
+
