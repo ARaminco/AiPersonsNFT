@@ -29,10 +29,7 @@ export const app = () => ({
 
   init() {
     this.fakers = { en: new Faker({ locale: en }), fa: new Faker({ locale: [fa, en] }) };
-    this.aiApiModal = new bootstrap.Modal(document.getElementById('aiApiModal'));
-    this.spouseModal = new bootstrap.Modal(document.getElementById('spouseModal'));
-    this.childModal = new bootstrap.Modal(document.getElementById('childModal'));
-
+    
     this.ai.key = localStorage.getItem('ai_api_key');
     this.ai.provider = localStorage.getItem('ai_provider') || 'openai';
     this.ai.enabled = !!this.ai.key;
@@ -127,13 +124,19 @@ export const app = () => ({
     }
   },
 
-  openAiModal() { this.aiApiModal.show(); },
+  openAiModal() {
+    if (!this.aiApiModal) {
+        this.aiApiModal = new bootstrap.Modal(document.getElementById('aiApiModal'));
+    }
+    this.aiApiModal.show();
+  },
   
   saveApiKey() {
     if (this.ai.key) {
       localStorage.setItem('ai_api_key', this.ai.key);
       localStorage.setItem('ai_provider', this.ai.provider);
       this.ai.enabled = true;
+      if (!this.aiApiModal) { this.aiApiModal = new bootstrap.Modal(document.getElementById('aiApiModal')); }
       this.aiApiModal.hide();
       this.ai.error = null;
     }
@@ -144,6 +147,7 @@ export const app = () => ({
     localStorage.removeItem('ai_provider');
     this.ai.key = null;
     this.ai.enabled = false;
+    if (!this.aiApiModal) { this.aiApiModal = new bootstrap.Modal(document.getElementById('aiApiModal')); }
     this.aiApiModal.hide();
   },
 
@@ -164,12 +168,40 @@ export const app = () => ({
   
   downloadJSON() { const blob=new Blob([this.output],{type:'application/json'}); const url=URL.createObjectURL(blob); const a=document.createElement('a'); const filename = (this.form.identity.name || 'character').replace(/ /g, '_').toLowerCase(); a.href=url; a.download=`${filename}.json`; a.click(); URL.revokeObjectURL(url); },
 
-  openSpouseModal() { this.temp.editingSpouse = JSON.parse(JSON.stringify(this.form.family.spouse || { name: '', dob: '', status: 'alive' })); this.spouseModal.show(); },
-  saveSpouse() { this.form.family.spouse = JSON.parse(JSON.stringify(this.temp.editingSpouse)); this.spouseModal.hide(); this.buildOutput(); },
-  removeSpouse() { this.form.family.spouse = null; this.spouseModal.hide(); this.buildOutput(); },
-  openChildModal(child = null, index = null) { this.temp.editingChildIndex = index; this.temp.editingChild = JSON.parse(JSON.stringify(child || { name: '', gender: 'male', dob: '', status: 'alive' })); this.childModal.show(); },
-  saveChild() { if (this.temp.editingChildIndex !== null) { this.form.family.children[this.temp.editingChildIndex] = JSON.parse(JSON.stringify(this.temp.editingChild)); } else { this.form.family.children.push(JSON.parse(JSON.stringify(this.temp.editingChild))); } this.childModal.hide(); this.buildOutput(); },
-  removeChild(index) { this.form.family.children.splice(index, 1); this.buildOutput(); },
+  openSpouseModal() {
+    if (!this.spouseModal) { this.spouseModal = new bootstrap.Modal(document.getElementById('spouseModal')); }
+    this.temp.editingSpouse = JSON.parse(JSON.stringify(this.form.family.spouse || { name: '', dob: '', status: 'alive' }));
+    this.spouseModal.show();
+  },
+  saveSpouse() {
+    this.form.family.spouse = JSON.parse(JSON.stringify(this.temp.editingSpouse));
+    this.spouseModal.hide();
+    this.buildOutput();
+  },
+  removeSpouse() {
+    this.form.family.spouse = null;
+    this.spouseModal.hide();
+    this.buildOutput();
+  },
+  openChildModal(child = null, index = null) {
+    if (!this.childModal) { this.childModal = new bootstrap.Modal(document.getElementById('childModal')); }
+    this.temp.editingChildIndex = index;
+    this.temp.editingChild = JSON.parse(JSON.stringify(child || { name: '', gender: 'male', dob: '', status: 'alive' }));
+    this.childModal.show();
+  },
+  saveChild() {
+    if (this.temp.editingChildIndex !== null) {
+      this.form.family.children[this.temp.editingChildIndex] = JSON.parse(JSON.stringify(this.temp.editingChild));
+    } else {
+      this.form.family.children.push(JSON.parse(JSON.stringify(this.temp.editingChild)));
+    }
+    this.childModal.hide();
+    this.buildOutput();
+  },
+  removeChild(index) {
+    this.form.family.children.splice(index, 1);
+    this.buildOutput();
+  },
   
   addArrayItem(section,key){ const v=(this.temp.inputs[key]||'').trim(); if(!v) return; this.form[section][key] = this.form[section][key] || []; if (!this.form[section][key].includes(v)) { this.form[section][key].push(v); } this.temp.inputs[key]=''; this.buildOutput(); },
   removeArrayItem(section,key,idx){ this.form[section][key].splice(idx,1); this.buildOutput(); },
