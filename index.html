@@ -36,9 +36,70 @@
           </template>
         </ul>
         <div class="tab-content" id="characterTabsContent">
-          <template x-for="tab in Object.keys(schema)" :key="tab">
-            <div class="tab-pane fade" :class="{'show active': activeTab === tab}">
+          <div class="tab-pane fade" :class="{'show active': activeTab === 'identity'}" role="tabpanel">
+            <div class="row g-4">
+              <template x-for="f in schema.identity">
+                <div :class="f.key === 'description' ? 'col-12' : 'col-12 col-md-6 col-lg-4'">
+                  <label class="form-label" x-text="t(f.label)"></label>
+                  <template x-if="f.type==='string'"><input class="form-control" type="text" x-model="form.identity[f.key]"></template>
+                  <template x-if="f.type==='textarea'"><textarea class="form-control" rows="4" x-model="form.identity[f.key]"></textarea></template>
+                  <template x-if="f.type==='date'"><input class="form-control" type="date" x-model="form.identity[f.key]" :disabled="f.key === 'dod' && form.identity.is_alive"></template>
+                  <template x-if="f.type==='boolean'"><div class="form-check form-switch pt-2"><input class="form-check-input" type="checkbox" role="switch" x-model="form.identity[f.key]" @change="if(form.identity.is_alive) form.identity.dod = ''"><label class="form-check-label" x-text="t(f.label)"></label></div></template>
+                  <template x-if="f.type==='enum'"><select class="form-select" x-model="form.identity[f.key]"><option value="" x-text="t('select_option')"></option><template x-for="opt in f.options"><option :value="opt" x-text="t(opt)"></option></template></select></template>
+                  <template x-if="f.type==='array'"><div><div class="input-group mb-2"><input class="form-control" type="text" x-model="temp.inputs[f.key]" @keydown.enter="addArrayItem('identity', f.key)"><button class="btn btn-outline-secondary" @click="addArrayItem('identity', f.key)"><i class="bi bi-plus-lg"></i></button></div><div><template x-for="(v,idx) in form.identity[f.key]"><span class="tag-chip"><span x-text="v"></span><button type="button" class="btn-close" @click="removeArrayItem('identity', f.key, idx)"></button></span></template></div></div></template>
+                </div>
+              </template>
             </div>
+          </div>
+
+          <div class="tab-pane fade" :class="{'show active': activeTab === 'family'}" role="tabpanel">
+            <div class="row g-4">
+              <div class="col-12">
+                <h3 class="fs-5 fw-bold border-bottom pb-2 mb-3" x-text="t('parents')"></h3>
+                <div class="row g-3">
+                  <template x-for="f in schema.family.filter(item => item.group === 'parents')">
+                    <div class="col-12 col-md-6"><label class="form-label" x-text="t(f.label)"></label><template x-if="f.type==='string'"><input class="form-control" type="text" x-model="form.family[f.key]"></template><template x-if="f.type==='enum'"><select class="form-select" x-model="form.family[f.key]"><template x-for="opt in f.options"><option :value="opt" x-text="t(opt)"></option></template></select></template></div>
+                  </template>
+                </div>
+              </div>
+              <div class="col-12">
+                <div class="d-flex justify-content-between align-items-center border-bottom pb-2 mb-3">
+                  <h3 class="fs-5 fw-bold m-0" x-text="t('spouse')"></h3>
+                  <template x-if="form.identity.marital_status !== 'single'">
+                    <button class="btn btn-sm btn-outline-primary" @click="openSpouseModal()"><i class="bi me-1" :class="form.family.spouse ? 'bi-pencil' : 'bi-plus-circle'"></i><span x-text="form.family.spouse ? t('edit') : t('add')"></span></button>
+                  </template>
+                </div>
+                <div x-show="form.family.spouse" class="card bg-light border">
+                  <div class="card-body"><p class="m-0"><strong><span x-text="t('name')"></span>:</strong> <span x-text="form.family.spouse?.name"></span></p><p class="m-0"><strong><span x-text="t('dob')"></span>:</strong> <span x-text="form.family.spouse?.dob"></span> (<span x-text="t('age')"></span> <span x-text="getAge(form.family.spouse?.dob)"></span>)</p><p class="m-0"><strong><span x-text="t('status')"></span>:</strong> <span x-text="t(form.family.spouse?.status)"></span></p></div>
+                </div>
+                <div x-show="!form.family.spouse && form.identity.marital_status !== 'single'"><p class="text-muted" x-text="t('no_spouse_data')"></p></div>
+              </div>
+              <div class="col-12">
+                <div class="d-flex justify-content-between align-items-center border-bottom pb-2 mb-3">
+                  <h3 class="fs-5 fw-bold m-0" x-text="t('children') + (form.family.children?.length > 0 ? ' (' + form.family.children.length + ')' : '')"></h3>
+                  <template x-if="form.identity.marital_status !== 'single'"><button class="btn btn-sm btn-outline-success" @click="openChildModal()"><i class="bi bi-plus-circle me-1"></i><span x-text="t('add_child')"></span></button></template>
+                </div>
+                <div x-show="form.family.children && form.family.children.length > 0" class="row g-3">
+                  <template x-for="(child, index) in form.family.children">
+                    <div class="col-12 col-md-6 col-lg-4">
+                       <div class="card h-100">
+                        <div class="card-body"><h4 class="fs-6 card-title" x-text="child.name"></h4><p class="card-text small m-0"><strong><span x-text="t('gender')"></span>:</strong> <span x-text="t(child.gender)"></span></p><p class="card-text small m-0"><strong><span x-text="t('dob')"></span>:</strong> <span x-text="child.dob"></span> (<span x-text="t('age')"></span> <span x-text="getAge(child.dob)"></span>)</p><p class="card-text small m-0"><strong><span x-text="t('status')"></span>:</strong> <span x-text="t(child.status)"></span></p></div>
+                        <div class="card-footer bg-light p-2 text-end"><button class="btn btn-sm btn-outline-secondary py-0" @click="openChildModal(child, index)"><i class="bi bi-pencil"></i></button><button class="btn btn-sm btn-outline-danger py-0 ms-1" @click="removeChild(index)"><i class="bi bi-trash"></i></button></div>
+                      </div>
+                    </div>
+                  </template>
+                </div>
+                 <div x-show="!form.family.children || form.family.children.length === 0"><p class="text-muted" x-text="t('no_children_data')"></p></div>
+              </div>
+            </div>
+          </div>
+
+          <template x-for="tab in ['physical', 'psychology', 'voice', 'movement', 'health']">
+            <div class="tab-pane fade" :class="{'show active': activeTab === tab}" role="tabpanel"><div class="row g-4">
+              <template x-if="tab === 'physical'"><template x-for="f in schema.physical"><div class="col-12 col-md-6 col-lg-4"><label class="form-label" x-text="t(f.label)"></label><template x-if="f.type==='number'"><div class="input-group"><input class="form-control" type="number" x-model.number="form.physical[f.key]" :min="f.min" :max="f.max"><span class="input-group-text" x-text="f.suffix || ''"></span></div></template><template x-if="f.type==='enum'"><select class="form-select" x-model="form.physical[f.key]"><option value="" x-text="t('select_option')"></option><template x-for="opt in f.options"><option :value="opt" x-text="t(opt)"></option></template></select></template><template x-if="f.type==='array'"><div><div class="input-group mb-2"><input class="form-control" type="text" x-model="temp.inputs[f.key]" @keydown.enter="addArrayItem('physical', f.key)"><button class="btn btn-outline-secondary" @click="addArrayItem('physical', f.key)"><i class="bi bi-plus-lg"></i></button></div><div><template x-for="(v,idx) in form.physical[f.key]"><span class="tag-chip"><span x-text="v"></span><button type="button" class="btn-close" @click="removeArrayItem('physical', f.key, idx)"></button></span></template></div></div></template></div></template></template>
+              <template x-if="tab === 'psychology'"><div class="col-12 col-lg-6"><div class="mb-3"><label class="form-label" x-text="t('personality_type')"></label><select class="form-select" x-model="form.psychology.personality_type"><option value="">—</option><template x-for="opt in schema.psychology.personality_type.options"><option :value="opt" x-text="opt"></option></template></select></div><div class="mb-3"><label class="form-label d-block mb-2" x-text="t('traits')"></label><div class="d-flex flex-wrap" style="gap: 0.5rem;"><template x-for="tr in schema.psychology.traits.options"><span class="badge badge-option text-bg-light border" @click="toggleTrait(tr)" :class="{'selected': form.psychology.traits.some(t => t.name === tr)}" x-text="t(tr)"></span></template></div></div><div class="mb-3"><label class="form-label" x-text="t('add_custom_trait')"></label><div class="d-flex flex-wrap gap-2"><input class="form-control flex-grow-1" :placeholder="t('custom_trait_placeholder')" x-model="temp.customTrait.name"><input class="form-range align-self-center" type="range" min="0" max="100" step="5" x-model.number="temp.customTrait.intensity" style="width:120px"><span class="badge text-bg-secondary align-self-center" x-text="temp.customTrait.intensity + '%'"></span><button class="btn btn-outline-primary" @click="addCustomTrait()"><i class="bi bi-plus-lg"></i></button></div></div><div class="mt-3"><template x-for="(tr,idx) in form.psychology.traits"><div class="trait-chip"><strong x-text="t(tr.name) || tr.name"></strong><input type="range" class="form-range" min="0" max="100" step="5" x-model.number="tr.intensity"><span class="badge text-bg-secondary" x-text="tr.intensity + '%'"></span><button class="btn btn-sm btn-link text-danger p-0" @click="removeTrait(idx)">✕</button></div></template></div></div><div class="col-12 col-lg-6"><div class="mb-3"><label class="form-label" x-text="t('values')"></label><div class="input-group mb-2"><input class="form-control" type="text" x-model="temp.inputs.values" @keydown.enter="addArrayItem('psychology', 'values')"><button class="btn btn-outline-secondary" @click="addArrayItem('psychology', 'values')"><i class="bi bi-plus-lg"></i></button></div><div><template x-for="(v,i) in form.psychology.values"><span class="tag-chip"><span x-text="v"></span><button class="btn-close" @click="removeArrayItem('psychology','values',i)"></button></span></template></div></div><div class="mb-3"><label class="form-label" x-text="t('fears')"></label><div class="input-group mb-2"><input class="form-control" type="text" x-model="temp.inputs.fears" @keydown.enter="addArrayItem('psychology', 'fears')"><button class="btn btn-outline-secondary" @click="addArrayItem('psychology', 'fears')"><i class="bi bi-plus-lg"></i></button></div><div><template x-for="(v,i) in form.psychology.fears"><span class="tag-chip"><span x-text="v"></span><button class="btn-close" @click="removeArrayItem('psychology','fears',i)"></button></span></template></div></div></div></template>
+              <template x-if="['voice', 'movement', 'health'].includes(tab)"><template x-for="f in schema[tab]"><div :class="f.type === 'textarea' ? 'col-12' : 'col-12 col-md-6'"><label class="form-label" x-text="t(f.label)"></label><template x-if="f.type==='enum'"><select class="form-select" x-model="form[tab][f.key]"><option :value="''" x-text="t('select_option')"></option><template x-for="opt in f.options"><option :value="opt" x-text="t(opt)"></option></template></select></template><template x-if="f.type==='string'"><input class="form-control" type="text" x-model="form[tab][f.key]"></template><template x-if="f.type==='textarea'"><textarea class="form-control" rows="5" x-model="form[tab][f.key]"></textarea></template><template x-if="f.type==='array'"><div><div class="input-group mb-2"><input class="form-control" type="text" x-model="temp.inputs[f.key]" @keydown.enter="addArrayItem(tab, f.key)"><button class="btn btn-outline-secondary" @click="addArrayItem(tab, f.key)"><i class="bi bi-plus-lg"></i></button></div><div><template x-for="(v,idx) in form[tab][f.key]"><span class="tag-chip"><span x-text="v"></span><button class="btn-close" @click="removeArrayItem(tab, f.key, idx)"></button></span></template></div></div></template></div></template></template>
+            </div></div>
           </template>
         </div>
       </main>
@@ -112,6 +173,18 @@
       </div>
     </div>
   </div>
+
+  <div class="modal fade" id="spouseModal" tabindex="-1"><div class="modal-dialog"><div class="modal-content">
+    <div class="modal-header"><h5 class="modal-title" x-text="t('edit_spouse')"></h5><button type="button" class="btn-close" data-bs-dismiss="modal"></button></div>
+    <div class="modal-body" x-if="temp.editingSpouse"><div class="mb-3"><label class="form-label" x-text="t('name')"></label><input type="text" class="form-control" x-model="temp.editingSpouse.name"></div><div class="mb-3"><label class="form-label" x-text="t('dob')"></label><input type="date" class="form-control" x-model="temp.editingSpouse.dob"></div><div class="mb-3"><label class="form-label" x-text="t('status')"></label><select class="form-select" x-model="temp.editingSpouse.status"><option value="alive" x-text="t('alive')"></option><option value="deceased" x-text="t('deceased')"></option></select></div></div>
+    <div class="modal-footer"><button type="button" class="btn btn-sm btn-danger me-auto" @click="removeSpouse()" x-text="t('delete')"></button><button type="button" class="btn btn-secondary btn-sm" data-bs-dismiss="modal" x-text="t('cancel')"></button><button type="button" class="btn btn-primary btn-sm" @click="saveSpouse()" x-text="t('save')"></button></div>
+  </div></div></div>
+
+  <div class="modal fade" id="childModal" tabindex="-1"><div class="modal-dialog"><div class="modal-content">
+      <div class="modal-header"><h5 class="modal-title" x-text="temp.editingChildIndex === null ? t('add_child') : t('edit_child')"></h5><button type="button" class="btn-close" data-bs-dismiss="modal"></button></div>
+      <div class="modal-body" x-if="temp.editingChild"><div class="mb-3"><label class="form-label" x-text="t('name')"></label><input type="text" class="form-control" x-model="temp.editingChild.name"></div><div class="mb-3"><label class="form-label" x-text="t('gender')"></label><select class="form-select" x-model="temp.editingChild.gender"><option value="male" x-text="t('male')"></option><option value="female" x-text="t('female')"></option></select></div><div class="mb-3"><label class="form-label" x-text="t('dob')"></label><input type="date" class="form-control" x-model="temp.editingChild.dob"></div><div class="mb-3"><label class="form-label" x-text="t('status')"></label><select class="form-select" x-model="temp.editingChild.status"><option value="alive" x-text="t('alive')"></option><option value="deceased" x-text="t('deceased')"></option></select></div></div>
+      <div class="modal-footer"><button type="button" class="btn btn-secondary btn-sm" data-bs-dismiss="modal" x-text="t('cancel')"></button><button type="button" class="btn btn-primary btn-sm" @click="saveChild()" x-text="t('save')"></button></div>
+  </div></div></div>
   
   <script type="module" src="/src/main.js"></script>
 </body>
