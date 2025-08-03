@@ -1,7 +1,5 @@
-import Alpine from 'alpinejs';
-import { Faker, en, fa } from '@faker-js/faker';
 import * as bootstrap from 'bootstrap';
-
+import { Faker, en, fa } from '@faker-js/faker';
 import { i18n } from '../modules/i18n.js';
 import { schema } from '../modules/schema.js';
 import { randomizeCharacter } from '../modules/characterLogic.js';
@@ -30,7 +28,7 @@ export const app = () => ({
 
   init() {
     this.fakers = { en: new Faker({ locale: en }), fa: new Faker({ locale: [fa, en] }) };
-    this.spouseModal = new bootstrap.Modal(document.getElementById('spouseModal'));
+    this.spouseModal = new bootstrap.Modal(document.getElementById('aiApiModal'));
     this.childModal = new bootstrap.Modal(document.getElementById('childModal'));
 
     this.ai.key = localStorage.getItem('ai_api_key');
@@ -76,7 +74,7 @@ export const app = () => ({
     this.form.family.spouse = null;
     this.form.family.children = [];
   },
-
+  
   t(k) { return (this.i18n[this.locale] && this.i18n[this.locale][k]) || k.replace(/_hair|_eye/g, '') },
 
   getAge(dob) {
@@ -101,7 +99,7 @@ export const app = () => ({
     this.ai.imageUrl = '';
     this.ai.error = null;
 
-    this.form = randomizeCharacter(this.fakers, this.schema, this.locale, (k) => this.t(k));
+    this.form = randomizeCharacter(this.fakers, this.schema, this.locale);
     this.buildOutput();
 
     if (this.ai.enabled) {
@@ -127,14 +125,14 @@ export const app = () => ({
     }
   },
 
-  openAiModal() { this.aiApiModal.show(); },
+  openAiModal() { this.spouseModal.show(); },
   
   saveApiKey() {
     if (this.ai.key) {
       localStorage.setItem('ai_api_key', this.ai.key);
       localStorage.setItem('ai_provider', this.ai.provider);
       this.ai.enabled = true;
-      this.aiApiModal.hide();
+      this.spouseModal.hide();
       this.ai.error = null;
     }
   },
@@ -144,7 +142,7 @@ export const app = () => ({
     localStorage.removeItem('ai_provider');
     this.ai.key = null;
     this.ai.enabled = false;
-    this.aiApiModal.hide();
+    this.spouseModal.hide();
   },
 
   buildOutput() {
