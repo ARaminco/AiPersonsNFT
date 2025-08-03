@@ -1,6 +1,7 @@
 import Alpine from 'alpinejs';
 import { Faker, en, fa } from '@faker-js/faker';
 import * as bootstrap from 'bootstrap';
+import { i18n } from './js/i18n.js';
 
 import 'bootstrap/dist/css/bootstrap.rtl.min.css';
 import 'bootstrap-icons/font/bootstrap-icons.css';
@@ -13,72 +14,7 @@ Alpine.data('app', () => ({
   copyStatus: 'copy',
   spouseModal: null,
   childModal: null,
-  i18n:{
-    fa:{
-      identity:'هویت', family: 'شجره‌نامه', physical:'ظاهر', psychology:'روانشناسی', voice:'صدا', movement:'حرکات', health:'سلامت و بیوگرافی',
-      parents: 'والدین', spouse: 'همسر', children: 'فرزندان', status: 'وضعیت', age: 'سن',
-      add: 'افزودن', edit: 'ویرایش', save: 'ذخیره', cancel: 'لغو', delete: 'حذف',
-      add_child: 'افزودن فرزند', edit_child: 'ویرایش فرزند', edit_spouse: 'ویرایش همسر',
-      no_spouse_data: 'اطلاعات همسر ثبت نشده است.', no_children_data: 'فرزندی ثبت نشده است.',
-      select_option:'انتخاب کنید', randomize:'ایجاد رندوم', build_json:'ساخت JSON', copy:'کپی', copied: 'کپی شد!', download:'دانلود',
-      name:'نام کامل', dob:'تاریخ تولد', is_alive:'در قید حیات', dod:'تاریخ فوت', gender:'جنسیت', nationality:'ملیت', birth_place:'محل تولد',
-      marital_status:'وضعیت تاهل', father_name:"نام پدر", mother_name:"نام مادر", father_status:"وضعیت پدر", mother_status:"وضعیت مادر",
-      languages:'زبان‌ها', residence:'محل زندگی', occupation:'شغل', description:'توضیح کوتاه',
-      height_cm:'قد (cm)', weight_kg:'وزن (kg)', skin_tone: 'رنگ پوست', build: 'نوع هیکل', clothing_style: 'سبک لباس', eye_color:'رنگ چشم', hair_color:'رنگ مو', 
-      face_shape:'شکل صورت', nose_shape:'شکل بینی', mouth_shape:'شکل لب/دهان', jawline:'خط فک', eyebrows:'ابرو‌ها', distinguishing_marks:'علائم خاص',
-      personality_type:'تیپ شخصیتی (MBTI)', traits:'صفات شخصیتی', values:'ارزش‌ها', fears:'ترس‌ها', add_custom_trait:'افزودن صفت سفارشی', custom_trait_placeholder: 'نام صفت (انگلیسی)',
-      voice_gender:'جنس صدا', tone:'لحن', pace:'سرعت صحبت', accent:'لهجه', catchphrases:'تکه‌کلام‌ها',
-      posture:'حالت بدن', gait:'الگوی راه‌رفتن', gestures:'ژست‌ها', notes:'یادداشت‌های حرکتی',
-      medical_conditions:'بیماری‌ها/شرایط پزشکی', bio:'بیوگرافی', output_json:'خروجی JSON',
-      male:'مرد', female:'زن', other:'دیگر', single:'مجرد', married:'متاهل', divorced:'مطلقه', widowed:'بیوه', alive:'زنده', deceased:'فوت شده',
-      fair: 'روشن', light: 'گندمی', olive: 'سبزه', brown: 'تیره', dark: 'بسیار تیره',
-      slim: 'لاغر', athletic: 'ورزشکار', average: 'متوسط', stout: 'چهارشانه', muscular: 'عضلانی', heavy: 'درشت',
-      casual: 'روزمره', formal: 'رسمی', vintage: 'کلاسیک', modern: 'مدرن', sporty: 'اسپرت',
-      brown_eye:'قهوه‌ای', black_eye:'مشکی', blue:'آبی', green:'سبز', gray:'خاکستری', hazel:'عسلی',
-      black_hair:'مشکی', brown_hair:'قهوه‌ای', blonde:'بلوند', red:'قرمز', gray_hair:'خاکستری', white:'سفید',
-      oval:'بیضی', round:'گرد', square:'مربع', heart:'قلبی', long:'کشیده',
-      kind:'مهربان', curious:'کنجکاو', aggressive:'پرخاشگر', patient:'صبور', brave:'شجاع', anxious:'مضطرب', optimistic:'خوش‌بین', pessimistic:'بدبین',
-      perfectionist:'کمال‌گرا', impulsive:'شتاب‌زده', creative:'خلاق', analytical:'تحلیل‌گر', dominant:'سلطه‌گر', submissive:'فرمان‌بردار', humorous:'شوخ‌طبع',
-      serious:'جدی', empathetic:'همدل', stoic:'خویشتن‌دار', ambitious:'بلندپرواز', lazy:'تنبل',
-      calm:'آرام', energetic:'پرانرژی', warm:'گرم', cold:'سرد',
-      slow:'آهسته', moderate:'متوسط', fast:'سریع',
-      straight_posture:'صاف', relaxed:'راحت', slouched:'خمیده',
-      medium_gait:'معمولی', confident:'با اعتماد به نفس', limping:'لنگان',
-      neutral:'خنثی'
-    },
-    en:{
-      identity:'Identity', family: 'Family Tree', physical:'Appearance', psychology:'Psychology', voice:'Voice', movement:'Movement', health:'Health & Bio',
-      parents: 'Parents', spouse: 'Spouse', children: 'Children', status: 'Status', age: 'Age',
-      add: 'Add', edit: 'Edit', save: 'Save', cancel: 'Cancel', delete: 'Delete',
-      add_child: 'Add Child', edit_child: 'Edit Child', edit_spouse: 'Edit Spouse',
-      no_spouse_data: 'No spouse data has been entered.', no_children_data: 'No children have been entered.',
-      select_option:'Select...', randomize:'Randomize', build_json:'Build JSON', copy:'Copy', copied: 'Copied!', download:'Download',
-      name:'Full Name', dob:'Date of Birth', is_alive:'Is Alive', dod:'Date of Death', gender:'Gender', nationality:'Nationality', birth_place:'Birth Place',
-      marital_status:'Marital Status', father_name:"Father's Name", mother_name:"Mother's Name", father_status:"Father's Status", mother_status:"Mother's Status",
-      languages:'Languages', residence:'Residence', occupation:'Occupation', description:'Short Description',
-      height_cm:'Height (cm)', weight_kg:'Weight (kg)', skin_tone: 'Skin Tone', build: 'Build', clothing_style: 'Clothing Style', eye_color:'Eye Color', hair_color:'Hair Color',
-      face_shape:'Face Shape', nose_shape:'Nose Shape', mouth_shape:'Mouth Shape', jawline:'Jawline', eyebrows:'Eyebrows', distinguishing_marks:'Distinguishing Marks',
-      personality_type:'Personality Type (MBTI)', traits:'Personality Traits', values:'Values', fears:'Fears', add_custom_trait:'Add Custom Trait', custom_trait_placeholder: 'Trait name (english)',
-      voice_gender:'Voice Gender', tone:'Tone', pace:'Speech Pace', accent:'Accent', catchphrases:'Catchphrases',
-      posture:'Posture', gait:'Gait', gestures:'Gestures', notes:'Movement Notes',
-      medical_conditions:'Medical Conditions', bio:'Biography', output_json:'Output JSON',
-      male:'Male', female:'Female', other:'Other', single:'Single', married:'Married', divorced:'Divorced', widowed:'Widowed', alive:'Alive', deceased:'Deceased',
-      fair: 'Fair', light: 'Light', olive: 'Olive', brown: 'Brown', dark: 'Dark',
-      slim: 'Slim', athletic: 'Athletic', average: 'Average', stout: 'Stout', muscular: 'Muscular', heavy: 'Heavy',
-      casual: 'Casual', formal: 'Formal', vintage: 'Vintage', modern: 'Modern', sporty: 'Sporty',
-      brown_eye:'Brown', black_eye:'Black', blue:'Blue', green:'Green', gray:'Gray', hazel:'Hazel',
-      black_hair:'Black', brown_hair:'Brown', blonde:'Blonde', red:'Red', gray_hair:'Gray', white:'White',
-      oval:'Oval', round:'Round', square:'Square', heart:'Heart', long:'Long',
-      kind:'Kind', curious:'Curious', aggressive:'Aggressive', patient:'Patient', brave:'Brave', anxious:'Anxious', optimistic:'Optimistic', pessimistic:'Pessimistic',
-      perfectionist:'Perfectionist', impulsive:'Impulsive', creative:'Creative', analytical:'Analytical', dominant:'Dominant', submissive:'Submissive', humorous:'Humorous',
-      serious:'Serious', empathetic:'Empathetic', stoic:'Stoic', ambitious:'Ambitious', lazy:'Lazy',
-      calm:'Calm', energetic:'Energetic', warm:'Warm', cold:'Cold',
-      slow:'Slow', moderate:'Moderate', fast:'Fast',
-      straight_posture:'Straight', relaxed:'Relaxed', slouched:'Slouched',
-      medium_gait:'Medium', confident:'Confident', limping:'Limping',
-      neutral:'Neutral'
-    }
-  },
+  i18n: i18n,
   schema:{
     identity:[
       {key:'name', type:'string', label:'name', default:''}, {key:'dob', type:'date', label:'dob', default:''},
@@ -127,6 +63,10 @@ Alpine.data('app', () => ({
     this.childModal = new bootstrap.Modal(document.getElementById('childModal'));
     this.resetForm();
     this.buildOutput();
+    this.$watch('locale', (newLocale) => {
+        document.title = this.i18n[newLocale].page_title;
+    });
+    document.title = this.i18n[this.locale].page_title;
   },
 
   resetForm() {
@@ -170,16 +110,17 @@ Alpine.data('app', () => ({
     if (!age) return '';
     const mainTraits = psychology.traits.slice(0, 2).map(t => this.t(t.name) || t.name).join(' و ');
     const mainValue = psychology.values[0] || '';
+    const t = (k) => this.t(k);
 
     if (this.locale === 'fa') {
       let bio = `${identity.name}، یک ${identity.occupation} ${age} ساله ساکن ${identity.residence} است. او که در ${identity.birth_place} به دنیا آمده، فردی ${mainTraits} شناخته می‌شود. مهم‌ترین ارزش در زندگی او ${mainValue} است.`;
-      if (family.spouse) { bio += ` او با ${family.spouse.name} (${this.t('همسر')}, ${this.t(family.spouse.status)}) زندگی می‌کند.`}
+      if (family.spouse) { bio += ` او با ${family.spouse.name} (${t('spouse')}, ${t(family.spouse.status)}) در ارتباط است.`}
       if (family.children.length > 0) { bio += ` آنها ${family.children.length} فرزند دارند.`}
       return bio;
     }
     
     let bio = `${identity.name}, a ${age}-year-old ${identity.occupation} residing in ${identity.residence}. Born in ${identity.birth_place}, they are known for being ${mainTraits}. Their core value is ${mainValue}.`;
-    if (family.spouse) { bio += ` They are in a relationship with ${family.spouse.name} (spouse, ${this.t(family.spouse.status)}).`}
+    if (family.spouse) { bio += ` They are in a relationship with ${family.spouse.name} (Spouse, ${t(family.spouse.status)}).`}
     if (family.children.length > 0) { bio += ` They have ${family.children.length} children.`}
     return bio;
   },
@@ -190,12 +131,9 @@ Alpine.data('app', () => ({
     const isFa = this.locale === 'fa';
 
     const iranianLocations = [
-        { city: 'تهران', accent: 'تهرانی', languages: ['فارسی'] },
-        { city: 'اصفهان', accent: 'اصفهانی', languages: ['فارسی'] },
-        { city: 'تبریز', accent: 'ترکی', languages: ['ترکی', 'فارسی'] },
-        { city: 'مشهد', accent: 'مشهدی', languages: ['فارسی'] },
-        { city: 'شیراز', accent: 'شیرازی', languages: ['فارسی'] },
-        { city: 'سنندج', accent: 'کردی', languages: ['کردی', 'فارسی'] },
+        { city: 'تهران', accent: 'تهرانی', languages: ['فارسی'] }, { city: 'اصفهان', accent: 'اصفهانی', languages: ['فارسی'] },
+        { city: 'تبریز', accent: 'ترکی', languages: ['ترکی', 'فارسی'] }, { city: 'مشهد', accent: 'مشهدی', languages: ['فارسی'] },
+        { city: 'شیراز', accent: 'شیرازی', languages: ['فارسی'] }, { city: 'سنندج', accent: 'کردی', languages: ['کردی', 'فارسی'] },
         { city: 'اهواز', accent: 'جنوبی', languages: ['فارسی', 'عربی'] },
     ];
     const worldLocations = [
@@ -209,32 +147,28 @@ Alpine.data('app', () => ({
     let nationality, birth_place, residence, languages, accent;
     if (isFa) {
         const birthLocation = fk.helpers.arrayElement(iranianLocations);
-        nationality = 'ایرانی';
-        birth_place = birthLocation.city;
-        languages = [...birthLocation.languages];
-        if (Math.random() < 0.7) languages.push('انگلیسی');
-        accent = birthLocation.accent;
-        residence = fk.helpers.weightedArrayElement([{weight: 7, value: birth_place}, {weight: 3, value: fk.helpers.arrayElement(iranianLocations).city}]);
+        nationality = 'ایرانی'; birth_place = birthLocation.city;
+        languages = [...birthLocation.languages]; if (Math.random() < 0.7) languages.push('انگلیسی');
+        accent = birthLocation.accent; residence = fk.helpers.weightedArrayElement([{weight: 7, value: birth_place}, {weight: 3, value: fk.helpers.arrayElement(iranianLocations).city}]);
     } else {
         const worldLocation = fk.helpers.arrayElement(worldLocations);
-        nationality = worldLocation.nationality;
-        birth_place = fk.helpers.arrayElement(worldLocation.cities);
-        languages = [worldLocation.mainLanguage];
-        if (worldLocation.mainLanguage !== 'English' && Math.random() < 0.9) languages.push('English');
-        accent = fk.helpers.arrayElement(worldLocation.accents);
-        residence = fk.helpers.weightedArrayElement([{weight: 7, value: birth_place}, {weight: 3, value: fk.helpers.arrayElement(worldLocation.cities)}]);
+        nationality = worldLocation.nationality; birth_place = fk.helpers.arrayElement(worldLocation.cities);
+        languages = [worldLocation.mainLanguage]; if (worldLocation.mainLanguage !== 'English' && Math.random() < 0.9) languages.push('English');
+        accent = fk.helpers.arrayElement(worldLocation.accents); residence = fk.helpers.weightedArrayElement([{weight: 7, value: birth_place}, {weight: 3, value: fk.helpers.arrayElement(worldLocation.cities)}]);
     }
 
     const characterGender = fk.helpers.arrayElement(this.schema.identity.find(f => f.key === 'gender').options);
     const fatherLastName = isFa ? fk.person.lastName() : fk.person.lastName('male');
-    let paternalLastName, characterLastName;
-    
+    let paternalLastName, characterLastName, spouseLastName;
+
+    characterLastName = fatherLastName;
     if (characterGender === 'male') {
         paternalLastName = fatherLastName;
-        characterLastName = fatherLastName;
+        spouseLastName = isFa ? fk.person.lastName() : fk.person.lastName('female');
+        if (Math.random() < 0.3) spouseLastName = paternalLastName;
     } else {
-        characterLastName = fatherLastName;
         paternalLastName = isFa ? fk.person.lastName() : fk.person.lastName('male');
+        spouseLastName = paternalLastName;
     }
     
     this.form.family.father_name = fk.person.firstName('male') + ' ' + fatherLastName;
@@ -259,12 +193,12 @@ Alpine.data('app', () => ({
     if (this.form.identity.marital_status !== 'single' && age > 20) {
         const spouseGender = characterGender === 'male' ? 'female' : 'male';
         const spouseDob = fk.date.birthdate({min: Math.max(18, age - 5), max: age + 5, mode: 'age'});
-        const spouseLastName = paternalLastName;
         this.form.family.spouse = {
             name: fk.person.firstName(spouseGender) + ' ' + spouseLastName,
             dob: spouseDob.toISOString().split('T')[0],
             status: fk.helpers.weightedArrayElement([{weight: 9, value: 'alive'}, {weight: 1, value: 'deceased'}])
         };
+
         const canHaveChildren = this.form.identity.marital_status === 'married' || this.form.identity.marital_status === 'widowed';
         if (canHaveChildren && age > 22) {
             const numChildren = fk.number.int({min: 0, max: 4});
@@ -272,10 +206,10 @@ Alpine.data('app', () => ({
             for (let i = 0; i < numChildren; i++) {
                 const earliestBirthYear = motherDob.getFullYear() + 18;
                 const latestBirthYear = motherDob.getFullYear() + 45;
+                if (latestBirthYear <= earliestBirthYear || new Date().getFullYear() < earliestBirthYear) continue;
                 const validStartYear = earliestBirthYear;
                 const validEndYear = Math.min(latestBirthYear, new Date().getFullYear());
-                if(validStartYear >= validEndYear) continue;
-                
+                if(validStartYear > validEndYear) continue;
                 const childBirthYear = fk.number.int({min: validStartYear, max: validEndYear});
                 const childDob = fk.date.between({ from: new Date(childBirthYear, 0, 1), to: new Date(childBirthYear, 11, 31) });
                 const childGender = fk.helpers.arrayElement(['male', 'female']);
@@ -326,7 +260,6 @@ Alpine.data('app', () => ({
     this.form.health = {
       medical_conditions: fk.datatype.boolean(0.5) ? fk.helpers.arrayElements(isFa ? ['آلرژی فصلی', 'کمی نزدیک‌بین', 'میگرن گهگاهی', 'فشار خون بالا'] : ['Pollen allergy', 'Slightly nearsighted', 'Occasional migraines', 'High blood pressure'], {min:1, max:2}) : [],
     };
-    
     this.form.identity.description = this.generateBio();
     this.form.health.bio = this.generateBio();
     this.buildOutput();
