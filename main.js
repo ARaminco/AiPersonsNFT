@@ -28,6 +28,17 @@ Alpine.data('app', () => ({
       fair: 'روشن', light: 'گندمی', olive: 'سبزه', brown: 'تیره', dark: 'بسیار تیره',
       slim: 'لاغر', athletic: 'ورزشکار', average: 'متوسط', stout: 'چهارشانه', muscular: 'عضلانی', heavy: 'درشت',
       casual: 'روزمره', formal: 'رسمی', vintage: 'کلاسیک', modern: 'مدرن', sporty: 'اسپرت',
+      brown_eye:'قهوه‌ای', black_eye:'مشکی', blue:'آبی', green:'سبز', gray:'خاکستری', hazel:'عسلی',
+      black_hair:'مشکی', brown_hair:'قهوه‌ای', blonde:'بلوند', red:'قرمز', gray_hair:'خاکستری', white:'سفید',
+      oval:'بیضی', round:'گرد', square:'مربع', heart:'قلبی', long:'کشیده',
+      kind:'مهربان', curious:'کنجکاو', aggressive:'پرخاشگر', patient:'صبور', brave:'شجاع', anxious:'مضطرب', optimistic:'خوش‌بین', pessimistic:'بدبین',
+      perfectionist:'کمال‌گرا', impulsive:'شتاب‌زده', creative:'خلاق', analytical:'تحلیل‌گر', dominant:'سلطه‌گر', submissive:'فرمان‌بردار', humorous:'شوخ‌طبع',
+      serious:'جدی', empathetic:'همدل', stoic:'خویشتن‌دار', ambitious:'بلندپرواز', lazy:'تنبل',
+      calm:'آرام', energetic:'پرانرژی', warm:'گرم', cold:'سرد',
+      slow:'آهسته', moderate:'متوسط', fast:'سریع',
+      straight_posture:'صاف', relaxed:'راحت', slouched:'خمیده',
+      medium_gait:'معمولی', confident:'با اعتماد به نفس', limping:'لنگان',
+      neutral:'خنثی'
     },
     en:{
       identity:'Identity', family: 'Family Tree', physical:'Appearance', psychology:'Psychology', voice:'Voice', movement:'Movement', health:'Health & Bio',
@@ -46,6 +57,17 @@ Alpine.data('app', () => ({
       fair: 'Fair', light: 'Light', olive: 'Olive', brown: 'Brown', dark: 'Dark',
       slim: 'Slim', athletic: 'Athletic', average: 'Average', stout: 'Stout', muscular: 'Muscular', heavy: 'Heavy',
       casual: 'Casual', formal: 'Formal', vintage: 'Vintage', modern: 'Modern', sporty: 'Sporty',
+      brown_eye:'Brown', black_eye:'Black', blue:'Blue', green:'Green', gray:'Gray', hazel:'Hazel',
+      black_hair:'Black', brown_hair:'Brown', blonde:'Blonde', red:'Red', gray_hair:'Gray', white:'White',
+      oval:'Oval', round:'Round', square:'Square', heart:'Heart', long:'Long',
+      kind:'Kind', curious:'Curious', aggressive:'Aggressive', patient:'Patient', brave:'Brave', anxious:'Anxious', optimistic:'Optimistic', pessimistic:'Pessimistic',
+      perfectionist:'Perfectionist', impulsive:'Impulsive', creative:'Creative', analytical:'Analytical', dominant:'Dominant', submissive:'Submissive', humorous:'Humorous',
+      serious:'Serious', empathetic:'Empathetic', stoic:'Stoic', ambitious:'Ambitious', lazy:'Lazy',
+      calm:'Calm', energetic:'Energetic', warm:'Warm', cold:'Cold',
+      slow:'Slow', moderate:'Moderate', fast:'Fast',
+      straight_posture:'Straight', relaxed:'Relaxed', slouched:'Slouched',
+      medium_gait:'Medium', confident:'Confident', limping:'Limping',
+      neutral:'Neutral'
     }
   },
   schema:{
@@ -54,7 +76,7 @@ Alpine.data('app', () => ({
       {key:'dob', type:'date', label:'dob', default:''},
       {key:'is_alive', type:'boolean', label:'is_alive', default: true},
       {key:'dod', type:'date', label:'dod', default:''},
-      {key:'gender', type:'enum', label:'gender', options:['male','female'], default:''}, // Simplified to male/female for family logic
+      {key:'gender', type:'enum', label:'gender', options:['male','female'], default:''},
       {key:'marital_status', type:'enum', label:'marital_status', options:['single','married','divorced','widowed'], default:''},
       {key:'nationality', type:'string', label:'nationality', default:''},
       {key:'birth_place', type:'string', label:'birth_place', default:''},
@@ -75,8 +97,8 @@ Alpine.data('app', () => ({
       {key:'skin_tone', type:'enum', label:'skin_tone', options:['fair', 'light', 'olive', 'brown', 'dark']},
       {key:'build', type:'enum', label:'build', options:['slim', 'athletic', 'average', 'stout', 'muscular', 'heavy']},
       {key:'clothing_style', type:'enum', label:'clothing_style', options:['casual', 'formal', 'vintage', 'modern', 'sporty']},
-      {key:'hair_color', type:'enum', label:'hair_color', options:['black','brown','blonde','red','gray','white']},
-      {key:'eye_color', type:'enum', label:'eye_color', options:['brown','black','blue','green','gray','hazel']},
+      {key:'hair_color', type:'enum', label:'hair_color', options:['black_hair','brown_hair','blonde','red','gray_hair','white']},
+      {key:'eye_color', type:'enum', label:'eye_color', options:['brown_eye','black_eye','blue','green','gray','hazel']},
       {key:'face_shape', type:'enum', label:'face_shape', options:['oval','round','square','heart','long']},
       {key:'distinguishing_marks', type:'array', label:'distinguishing_marks', default:[]},
     ],
@@ -140,7 +162,7 @@ Alpine.data('app', () => ({
     this.form.family.children = [];
   },
 
-  t(k){return (this.i18n[this.locale]&&this.i18n[this.locale][k])||k},
+  t(k){return (this.i18n[this.locale]&&this.i18n[this.locale][k])||k.replace(/_hair|_eye/g, '')},
 
   getAge(dob) {
     if (!dob) return 0;
@@ -153,25 +175,21 @@ Alpine.data('app', () => ({
   },
 
   generateBio() {
-    const { identity, family, psychology, health } = this.form;
+    const { identity, family, psychology } = this.form;
     const age = this.getAge(identity.dob);
     const mainTraits = psychology.traits.slice(0, 2).map(t => this.t(t.name) || t.name).join(' و ');
-    const mainValue = psychology.values[0] || (this.locale === 'fa' ? 'هیچ ارزش خاصی' : 'no special value');
+    const mainValue = psychology.values[0] || '';
 
-    let bio = this.locale === 'fa'
-      ? `${identity.name}، یک ${identity.occupation} ${age} ساله ساکن ${identity.residence} است. او که در ${identity.birth_place} به دنیا آمده، فردی ${mainTraits} شناخته می‌شود. مهم‌ترین ارزش در زندگی او ${mainValue} است.`
-      : `${identity.name}, a ${age}-year-old ${identity.occupation} residing in ${identity.residence}. Born in ${identity.birth_place}, they are known for being ${mainTraits}. Their core value is ${mainValue}.`;
+    if (this.locale === 'fa') {
+      let bio = `${identity.name}، یک ${identity.occupation} ${age} ساله ساکن ${identity.residence} است. او که در ${identity.birth_place} به دنیا آمده، فردی ${mainTraits} شناخته می‌شود. مهم‌ترین ارزش در زندگی او ${mainValue} است.`;
+      if (family.spouse) { bio += ` او با ${family.spouse.name} (${this.t('همسر')}, ${this.t(family.spouse.status)}) زندگی می‌کند.`}
+      if (family.children.length > 0) { bio += ` آنها ${family.children.length} فرزند دارند.`}
+      return bio;
+    }
     
-    if (family.spouse) {
-        bio += this.locale === 'fa' 
-            ? ` او با ${family.spouse.name} (${this.t('همسر')}, ${this.t(family.spouse.status)}) زندگی می‌کند.`
-            : ` They live with ${family.spouse.name} (spouse, ${this.t(family.spouse.status)}).`;
-    }
-    if (family.children.length > 0) {
-        bio += this.locale === 'fa'
-            ? ` آنها ${family.children.length} فرزند دارند.`
-            : ` They have ${family.children.length} children.`;
-    }
+    let bio = `${identity.name}, a ${age}-year-old ${identity.occupation} residing in ${identity.residence}. Born in ${identity.birth_place}, they are known for being ${mainTraits}. Their core value is ${mainValue}.`;
+    if (family.spouse) { bio += ` They live with ${family.spouse.name} (spouse, ${this.t(family.spouse.status)}).`}
+    if (family.children.length > 0) { bio += ` They have ${family.children.length} children.`}
     return bio;
   },
   
@@ -180,23 +198,35 @@ Alpine.data('app', () => ({
     const fk = this.fakers[this.locale];
     const isFa = this.locale === 'fa';
 
-    // === 1. Generate Parents & Last Name ===
-    const lastName = isFa ? fk.person.lastName() : fk.person.lastName('male');
-    this.form.family.father_name = fk.person.firstName('male') + ' ' + lastName;
+    // === 1. Define Family Names ===
+    const characterGender = fk.helpers.arrayElement(this.schema.identity.find(f => f.key === 'gender').options);
+    const fatherLastName = isFa ? fk.person.lastName() : fk.person.lastName('male');
+    let paternalLastName, characterLastName;
+
+    if (characterGender === 'male') {
+        paternalLastName = fatherLastName;
+        characterLastName = fatherLastName;
+    } else { // Character is female, she keeps her father's last name
+        characterLastName = fatherLastName;
+        // The family name will be determined by her future spouse
+        paternalLastName = isFa ? fk.person.lastName() : fk.person.lastName('male');
+    }
+    
+    // === 2. Generate Parents ===
+    this.form.family.father_name = fk.person.firstName('male') + ' ' + fatherLastName;
     this.form.family.father_status = fk.helpers.arrayElement(this.schema.family.find(f => f.key === 'father_status').options);
-    this.form.family.mother_name = fk.person.firstName('female') + ' ' + fk.person.lastName('female');
+    this.form.family.mother_name = fk.person.firstName('female') + ' ' + (isFa ? fk.person.lastName() : fk.person.lastName('female'));
     this.form.family.mother_status = fk.helpers.arrayElement(this.schema.family.find(f => f.key === 'mother_status').options);
 
-    // === 2. Generate Main Character ===
-    const gender = fk.helpers.arrayElement(this.schema.identity.find(f => f.key === 'gender').options);
+    // === 3. Generate Main Character ===
     const dob = fk.date.birthdate({ min: 18, max: 80, mode: 'age' });
     const age = this.getAge(dob);
     
     this.form.identity = {
-        name: fk.person.firstName(gender) + ' ' + lastName,
+        name: fk.person.firstName(characterGender) + ' ' + characterLastName,
         dob: dob.toISOString().split('T')[0],
         is_alive: fk.helpers.weightedArrayElement([{weight: 9, value: true}, {weight: 1, value: false}]),
-        gender: gender,
+        gender: characterGender,
         marital_status: fk.helpers.arrayElement(this.schema.identity.find(f => f.key === 'marital_status').options),
         nationality: isFa ? 'ایرانی' : fk.location.country(),
         birth_place: fk.location.city(),
@@ -206,12 +236,13 @@ Alpine.data('app', () => ({
     };
     this.form.identity.dod = this.form.identity.is_alive ? '' : fk.date.past({years: Math.min(age, 15), refDate: new Date()}).toISOString().split('T')[0];
     
-    // === 3. Generate Spouse & Children (if applicable) ===
+    // === 4. Generate Spouse & Children ===
     if (this.form.identity.marital_status !== 'single' && age > 20) {
-        const spouseGender = gender === 'male' ? 'female' : 'male';
+        const spouseGender = characterGender === 'male' ? 'female' : 'male';
         const spouseDob = fk.date.birthdate({min: Math.max(18, age - 5), max: age + 5, mode: 'age'});
+        const spouseLastName = (spouseGender === 'male') ? paternalLastName : paternalLastName; // Spouse takes the paternal last name
         this.form.family.spouse = {
-            name: fk.person.fullName({ sex: spouseGender }),
+            name: fk.person.firstName(spouseGender) + ' ' + spouseLastName,
             dob: spouseDob.toISOString().split('T')[0],
             status: fk.helpers.weightedArrayElement([{weight: 9, value: 'alive'}, {weight: 1, value: 'deceased'}])
         };
@@ -219,16 +250,16 @@ Alpine.data('app', () => ({
         const canHaveChildren = this.form.identity.marital_status !== 'divorced';
         if (canHaveChildren && age > 22) {
             const numChildren = fk.number.int({min: 0, max: 4});
-            const motherDob = (gender === 'female' ? dob : spouseDob);
+            const motherDob = (characterGender === 'female' ? dob : spouseDob);
             for (let i = 0; i < numChildren; i++) {
                 const earliestBirthYear = new Date(motherDob).getFullYear() + 18;
                 const latestBirthYear = new Date(motherDob).getFullYear() + 45;
-                if (latestBirthYear <= earliestBirthYear) continue;
+                if (latestBirthYear <= earliestBirthYear || new Date().getFullYear() < earliestBirthYear) continue;
 
-                const childDob = fk.date.birthdate({ min: 1, max: Math.min(age - 18, latestBirthYear - earliestBirthYear), mode: 'age', refDate: new Date(latestBirthYear, 1, 1) });
+                const childDob = fk.date.birthdate({ refDate: new Date(Math.min(new Date().getFullYear() - 1, latestBirthYear),1,1), min: 1, max: new Date().getFullYear() - earliestBirthYear });
                 const childGender = fk.helpers.arrayElement(['male', 'female']);
                 this.form.family.children.push({
-                    name: fk.person.firstName(childGender) + ' ' + lastName,
+                    name: fk.person.firstName(childGender) + ' ' + paternalLastName,
                     dob: childDob.toISOString().split('T')[0],
                     gender: childGender,
                     status: fk.helpers.weightedArrayElement([{weight: 19, value: 'alive'}, {weight: 1, value: 'deceased'}])
@@ -237,12 +268,12 @@ Alpine.data('app', () => ({
         }
     }
     
-    // === 4. Generate Detailed Appearance ===
+    // === 5. Generate Detailed Appearance ===
     let height, weight;
     if (age <= 1) { height = fk.number.int({ min: 50, max: 75 }); weight = fk.number.int({ min: 3, max: 10 }); } 
     else if (age <= 12) { height = 75 + (age - 1) * 6; weight = 10 + (age - 1) * 2.5; } 
-    else if (age <= 20) { height = 140 + (age - 12) * (gender === 'male' ? 4 : 3); weight = 35 + (age - 12) * 4; } 
-    else { height = gender === 'male' ? fk.number.int({ min: 165, max: 195 }) : fk.number.int({ min: 155, max: 180 }); const baseWeight = (height - 100) * 0.9; weight = Math.round(baseWeight + fk.number.int({min: -10, max: 15})); }
+    else if (age <= 20) { height = 140 + (age - 12) * (characterGender === 'male' ? 4 : 3); weight = 35 + (age - 12) * 4; } 
+    else { height = characterGender === 'male' ? fk.number.int({ min: 165, max: 195 }) : fk.number.int({ min: 155, max: 180 }); const baseWeight = (height - 100) * 0.9; weight = Math.round(baseWeight + fk.number.int({min: -10, max: 15})); }
     this.form.physical = {
         height_cm: Math.min(Math.round(height), 250),
         weight_kg: Math.min(Math.round(weight), 300),
@@ -255,7 +286,7 @@ Alpine.data('app', () => ({
         distinguishing_marks: fk.helpers.arrayElements(isFa ? ['خال روی گونه چپ', 'جای زخم کوچک روی پیشانی', 'تتو روی مچ دست', 'کک و مک روی بینی', 'چشمانی نافذ'] : ['mole on left cheek', 'small scar on forehead', 'tattoo on wrist', 'freckles across nose', 'piercing eyes'], {min: 1, max: 2})
     };
     
-    // === 5. Generate Other Details ===
+    // === 6. Generate Other Details ===
     this.form.psychology = {
       personality_type: fk.helpers.arrayElement(this.schema.psychology.personality_type.options),
       traits: fk.helpers.arrayElements(this.schema.psychology.traits.options, {min:4, max:7}).map(tr => ({ name: tr, intensity: Math.round(fk.number.int({ min: 20, max: 95 }) / 5) * 5 })),
@@ -279,26 +310,21 @@ Alpine.data('app', () => ({
       medical_conditions: fk.datatype.boolean(0.5) ? fk.helpers.arrayElements(isFa ? ['آلرژی فصلی', 'کمی نزدیک‌بین', 'میگرن گهگاهی', 'فشار خون بالا'] : ['Pollen allergy', 'Slightly nearsighted', 'Occasional migraines', 'High blood pressure'], {min:1, max:2}) : [],
     };
     
-    // === 6. Generate Bio & Finalize ===
+    // === 7. Generate Bio & Finalize ===
     this.form.identity.description = this.generateBio();
-    this.form.health.bio = this.generateBio(); // Also put full bio in health tab
+    this.form.health.bio = this.generateBio();
     this.buildOutput();
   },
   
-  // Other methods remain the same...
-  addArrayItem(section,key){ /* ... */ }, removeArrayItem(section,key,idx){ /* ... */ },
-  toggleTrait(name){ /* ... */ }, addCustomTrait(){ /* ... */ }, removeTrait(idx){ /* ... */ },
-  buildOutput(){ /* ... */ }, copyJSON(){ /* ... */ }, downloadJSON(){ /* ... */ },
-  
-  // Duplicated methods for brevity in this example. In a real app, you would not duplicate.
-  // The provided code block below will have the full, non-duplicated methods.
+  addArrayItem(section,key){ const v=(this.temp.inputs[key]||'').trim(); if(!v) return; this.form[section][key] = this.form[section][key] || []; if (!this.form[section][key].includes(v)) { this.form[section][key].push(v); } this.temp.inputs[key]=''; this.buildOutput(); },
+  removeArrayItem(section,key,idx){ this.form[section][key].splice(idx,1); this.buildOutput(); },
+  toggleTrait(name){ const i=this.form.psychology.traits.findIndex(x=>x.name===name); if(i>-1){ this.form.psychology.traits.splice(i,1) } else{ this.form.psychology.traits.push({name, intensity:60}) } this.buildOutput(); },
+  addCustomTrait(){ const n=this.temp.customTrait.name.trim(); if(!n) return; const i=this.form.psychology.traits.findIndex(x=>x.name===n); if(i>-1){ this.form.psychology.traits[i].intensity=this.temp.customTrait.intensity } else{ this.form.psychology.traits.push({name:n, intensity:this.temp.customTrait.intensity}) } this.temp.customTrait={name:'', intensity:50}; this.buildOutput(); },
+  removeTrait(idx){ this.form.psychology.traits.splice(idx,1); this.buildOutput(); },
+  buildOutput(){ try { const cleanForm = JSON.parse(JSON.stringify(this.form)); if (cleanForm.identity && cleanForm.identity.is_alive) { cleanForm.identity.dod = null; } this.output=JSON.stringify(cleanForm,null,2); } catch (error) { console.error("Failed to build JSON output:", error); this.output = "Error: Could not generate JSON. Check console for details."; } },
+  copyJSON(){ navigator.clipboard.writeText(this.output).then(() => { this.copyStatus = 'copied'; setTimeout(() => { this.copyStatus = 'copy' }, 2000); }); },
+  downloadJSON(){ const blob=new Blob([this.output],{type:'application/json'}); const url=URL.createObjectURL(blob); const a=document.createElement('a'); const filename = (this.form.identity.name || 'character').replace(/ /g, '_').toLowerCase(); a.href=url; a.download=`${filename}.json`; a.click(); URL.revokeObjectURL(url); }
 }));
 
-// This is a simplified representation. The full code block below contains the complete, correct methods.
-// The code has been intentionally shortened here for readability. Please use the full code that follows.
-
-// [The full code for main.js will be provided to the user, this is just the thought process placeholder]
-
-// 3. Start Alpine
 window.Alpine = Alpine;
 Alpine.start();
