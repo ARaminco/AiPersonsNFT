@@ -161,4 +161,8 @@ export function randomizeCharacter(fakers, schema, locale) {
       notes: isFa ? 'معمولاً تماس چشمی طولانی برقرار نمی‌کند و وقتی عصبی است با انگشتانش بازی می‌کند.' : 'Tends to avoid long eye contact and fidgets when nervous.'
     };
     form.health = {
-      medical_conditions
+      medical_conditions: fk.datatype.boolean(0.5) ? fk.helpers.arrayElements(isFa ? ['آلرژی فصلی', 'کمی نزدیک‌بین', 'میگرن گهگاهی', 'فشار خون بالا'] : ['Pollen allergy', 'Slightly nearsighted', 'Occasional migraines', 'High blood pressure'], {min:1, max:2}) : [],
+    };
+    
+    return form;
+}
